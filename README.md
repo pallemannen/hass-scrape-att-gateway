@@ -14,7 +14,9 @@ Developed and tested against a BGW320-500 running firmware 6.34.7. The gateway's
 
 1. Add this repository to HACS as a custom repository (category "Integration"), then install "AT&T Gateway".
 2. Restart Home Assistant.
-3. Go to **Settings → Devices & Services → Add Integration**, search for "AT&T Gateway", and enter your gateway's **IP address** (defaults to `192.168.1.254`).
+3. Go to **Settings → Devices & Services → Add Integration**, search for "AT&T Gateway", and fill in:
+   - **Gateway IP address** (defaults to `192.168.1.254` - change it if yours is different)
+   - **Device name** (defaults to `AT&T Gateway` - change it if you want something else)
 
    The address is checked against the gateway during setup, so you'll see an error right away if it's wrong or unreachable, rather than ending up with sensors that silently never update.
 
