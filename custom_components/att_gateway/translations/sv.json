@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "host": "Internetgatewayens IP-adress",
+          "name": "Enhetsnamn"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Internetgatewayens IP-adress",
+          "name": "Enhetsnamn"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta till gatewayen. Kontrollera IP-adressen och att den är nåbar.",
+      "not_a_gateway": "Anslutningen lyckades, men svaret såg inte ut som en AT&T-gateways sida för systeminformation.",
+      "unknown": "Oväntat fel, kontrollera loggarna i Home Assistant för detaljer."
+    },
+    "abort": {
+      "already_configured": "AT&T Gateway är redan installerad.",
+      "reconfigure_successful": "AT&T Gateway-inställningarna har uppdaterats."
+    }
+  }
+}
