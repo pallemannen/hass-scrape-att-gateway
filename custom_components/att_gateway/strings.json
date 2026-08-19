@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "host": "Gateway IP address",
+          "name": "Device name"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Gateway IP address",
+          "name": "Device name"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the gateway. Check the IP address and that it's reachable.",
+      "not_a_gateway": "Connected, but the response didn't look like an AT&T gateway's System Information page.",
+      "unknown": "Unexpected error, check the Home Assistant logs for details."
+    },
+    "abort": {
+      "already_configured": "AT&T Gateway is already configured.",
+      "reconfigure_successful": "AT&T Gateway settings updated."
+    }
+  }
+}
