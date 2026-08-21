@@ -1,6 +1,7 @@
 {
   "domain": "att_gateway",
   "name": "AT&T Gateway",
+  "after_dependencies": ["rest", "scrape"],
   "codeowners": ["@pallemannen"],
   "config_flow": true,
   "documentation": "https://github.com/pallemannen/hass-scrape-att-gateway",
