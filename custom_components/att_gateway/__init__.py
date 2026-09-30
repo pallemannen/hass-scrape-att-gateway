@@ -32,12 +32,18 @@ from .const import (
     CONF_ACCESS_CODE,
     CONF_HOST,
     DEFAULT_SCAN_INTERVAL,
+    FIBER_PATH,
+    LIST_COUNTS,
+    PACKET_FILTER_PATH,
     FIREWALL_PATH,
+    IPV6_PATH,
     LAN_PATH,
     NAT_PATH,
+    PASSTHROUGH_PATH,
     SPEED_PATH,
     STATUS_PATH,
     SYSINFO_PATH,
+    WIFI_PATH,
 )
 from .coordinator import LockedPageCoordinator
 from .device import build_device_info
@@ -45,7 +51,7 @@ from .util import build_rest_config, entity_object_id
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.BUTTON]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.BUTTON, Platform.SWITCH]
 
 
 async def _async_build_coordinator(
@@ -71,6 +77,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "status": await _async_build_coordinator(hass, entry, host, STATUS_PATH),
         "lan": await _async_build_coordinator(hass, entry, host, LAN_PATH),
         "firewall": await _async_build_coordinator(hass, entry, host, FIREWALL_PATH),
+        "fiber": await _async_build_coordinator(hass, entry, host, FIBER_PATH),
         "device_info": build_device_info(entry, coordinator_sysinfo),
         "client": None,
     }
@@ -78,7 +85,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if access_code := entry.data.get(CONF_ACCESS_CODE):
         client = GatewayClient(hass, host, access_code)
         runtime_data["client"] = client
-        for key, path in (("nat", NAT_PATH), ("speed", SPEED_PATH)):
+        for key, path in (
+            ("nat", NAT_PATH),
+            ("speed", SPEED_PATH),
+            ("ipv6", IPV6_PATH),
+            ("passthrough", PASSTHROUGH_PATH),
+            ("wifi", WIFI_PATH),
+            ("packet_filter", PACKET_FILTER_PATH),
+            *((key, path) for key, _, path, _ in LIST_COUNTS),
+        ):
             coordinator = LockedPageCoordinator(hass, entry, client, path)
             # A rejected code shouldn't take down the open-page entities.
             await coordinator.async_refresh()

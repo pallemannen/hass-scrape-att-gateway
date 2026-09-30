@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 import logging
+import re
 import socket
 
 from homeassistant.components.scrape.coordinator import ScrapeCoordinator
@@ -33,22 +34,35 @@ from .const import (
     CURRENT_TIME_FIELD_KEY,
     CURRENT_TIME_FORMAT,
     DEFAULT_SCAN_INTERVAL,
+    FIBER_FIELDS,
     GAUGE_FIELD_KEYS,
     GatewayField,
     ICON_ACTIVE,
+    ICON_ETHERNET_OFF,
+    ICON_ETHERNET_ON,
     ICON_INACTIVE,
+    ICON_WIFI_OFF,
+    ICON_WIFI_ON,
     LAN_FIELDS,
     LAN_INTERFACES_TABLE,
+    LAN_PORT_STATUS_FIELD_KEYS,
     LAN_PORT_SPEED_FIELD_KEYS,
     LAST_REBOOT_ICON,
     LINK_SPEED_FIELD_KEYS,
+    LIST_COUNTS,
     NAT_FIELDS,
+    PACKET_FILTER_TABLE,
+    PASSTHROUGH_FIELDS,
+    PASSTHROUGH_LEASE_INPUTS,
+    RA_MTU_FIELD,
     SPEED_TABLE,
     SPEED_TIME_FORMAT,
     STATIC_ICONS,
     STATUS_FIELDS,
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
+    WIFI_SSID_FIELDS,
+    WIFI_STATUS_FIELD_KEYS,
 )
 from .util import entity_object_id, extract_text as _extract_text
 
@@ -102,7 +116,11 @@ async def async_setup_entry(
     for coordinator, fields in (
         (coordinator_status, STATUS_FIELDS),
         (coordinator_lan, LAN_FIELDS),
+        (entry.runtime_data["fiber"], FIBER_FIELDS),
         (entry.runtime_data.get("nat"), NAT_FIELDS),
+        (entry.runtime_data.get("ipv6"), (RA_MTU_FIELD,)),
+        (entry.runtime_data.get("passthrough"), PASSTHROUGH_FIELDS),
+        (entry.runtime_data.get("wifi"), WIFI_SSID_FIELDS),
     ):
         if coordinator is None:
             continue
@@ -139,6 +157,14 @@ async def async_setup_entry(
         )
         entities.append(LastSpeedTestSensor(hass, coordinator_speed, device_info))
 
+    if (coordinator_passthrough := entry.runtime_data.get("passthrough")) is not None:
+        entities.append(PassthroughLeaseSensor(hass, coordinator_passthrough, device_info))
+    for key, name, _, table in LIST_COUNTS:
+        if (coordinator := entry.runtime_data.get(key)) is not None:
+            entities.append(ListCountSensor(hass, coordinator, device_info, key, name, table))
+    if (coordinator_pf := entry.runtime_data.get("packet_filter")) is not None:
+        entities.append(PacketFilterRulesSensor(hass, coordinator_pf, device_info))
+
     async_add_entities(entities)
 
 
@@ -150,6 +176,10 @@ def _init_entity(entity, hass: HomeAssistant, key: str, device_info: DeviceInfo)
     entity.entity_id = async_generate_entity_id(
         ENTITY_ID_FORMAT, entity_object_id(entity._attr_name), hass=hass
     )
+
+
+def _cell_text(td) -> str:
+    return re.sub(r"\s+", " ", td.get_text(" ", strip=True))
 
 
 def _parse_int(raw: str | None) -> int | None:
@@ -177,6 +207,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._field = field
         self._attr_name = field.name
+        self._attr_entity_registry_enabled_default = field.enabled
         self._attr_unique_id = f"att_gateway_{field.key}"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
@@ -187,7 +218,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the sensor's current value."""
-        return _extract_text(self.coordinator, self._field.select)
+        return _extract_text(self.coordinator, self._field.select, self._field.attr)
 
     @property
     def icon(self) -> str | None:
@@ -195,6 +226,12 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         if self._field.key == CONNECTION_STATUS_FIELD_KEY:
             value = self.native_value
             return ICON_ACTIVE if value and value.lower() == "up" else ICON_INACTIVE
+        if self._field.key in WIFI_STATUS_FIELD_KEYS:
+            value = self.native_value
+            return ICON_WIFI_ON if value and value.lower() == "enabled" else ICON_WIFI_OFF
+        if self._field.key in LAN_PORT_STATUS_FIELD_KEYS:
+            value = self.native_value
+            return ICON_ETHERNET_ON if value and value.lower() == "up" else ICON_ETHERNET_OFF
         return self._static_icon
 
 
@@ -329,7 +366,7 @@ class GaugeFieldSensor(GatewayFieldSensor):
     @property
     def native_value(self) -> int | None:
         """Return the value, parsed as an int."""
-        return _parse_int(_extract_text(self.coordinator, self._field.select))
+        return _parse_int(_extract_text(self.coordinator, self._field.select, self._field.attr))
 
 
 class LinkSpeedSensor(GaugeFieldSensor):
@@ -475,3 +512,119 @@ class IpAddressSensor(SensorEntity):
             )
         except OSError:
             self._attr_native_value = None
+
+
+class PassthroughLeaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+    """The passthrough DHCP lease time (days/hours/minutes/seconds form fields)."""
+
+    _attr_has_entity_name = True
+    _attr_name = "Passthrough DHCP Lease"
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+
+    def __init__(
+        self, hass: HomeAssistant, coordinator: DataUpdateCoordinator, device_info: DeviceInfo
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        _init_entity(self, hass, "passthrough_dhcp_lease", device_info)
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the lease time in seconds."""
+        total = 0
+        for name, seconds in PASSTHROUGH_LEASE_INPUTS.items():
+            value = _parse_int(_extract_text(self.coordinator, f'input[name="{name}"]', "value"))
+            if value is None:
+                return None
+            total += value * seconds
+        return total
+
+
+class ListCountSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+    """Number of entries in a list table; the entries' cell texts as an attribute."""
+
+    _attr_has_entity_name = True
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        coordinator: DataUpdateCoordinator,
+        device_info: DeviceInfo,
+        key: str,
+        name: str,
+        table: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_name = name
+        self._table = table
+        _init_entity(self, hass, key, device_info)
+
+    def _entries(self) -> list[str] | None:
+        if self.coordinator.data is None:
+            return None
+        # The empty list is a single <th> row ("No ... entries have been defined").
+        return [
+            " | ".join(cell for cell in map(_cell_text, tr.select("td")) if cell)
+            for tr in self.coordinator.data.select(f"{self._table} tr")
+            if tr.select("td")
+        ]
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of entries."""
+        entries = self._entries()
+        return len(entries) if entries is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[str]] | None:
+        """Return the entries."""
+        entries = self._entries()
+        return {"entries": entries} if entries else None
+
+
+class PacketFilterRulesSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+    """Number of packet filter rules that have at least one match condition.
+
+    Each rule is a numbered row followed by rows for its match conditions;
+    empty rule slots are shown too, so those aren't counted.
+    """
+
+    _attr_has_entity_name = True
+    _attr_name = "Number of Packet Filter Rules"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self, hass: HomeAssistant, coordinator: DataUpdateCoordinator, device_info: DeviceInfo
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        _init_entity(self, hass, "packet_filter_rules", device_info)
+
+    def _rules(self) -> list[str] | None:
+        if self.coordinator.data is None:
+            return None
+        rules: list[list[str]] = []
+        for tr in self.coordinator.data.select(f"{PACKET_FILTER_TABLE} tr"):
+            cells = [_cell_text(td) for td in tr.select("td")]
+            if not cells:
+                continue
+            if cells[0].isdigit():
+                rules.append([])
+            elif rules and any(cells):
+                rules[-1].append(" ".join(c for c in cells if c))
+        return [" / ".join(r) for r in rules if r]
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of non-empty rules."""
+        rules = self._rules()
+        return len(rules) if rules is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[str]] | None:
+        """Return the rules' match conditions."""
+        rules = self._rules()
+        return {"rules": rules} if rules else None

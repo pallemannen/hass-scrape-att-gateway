@@ -24,14 +24,18 @@ def build_rest_config(host: str, path: str) -> ConfigType:
     return REST_CONFIG_SCHEMA({CONF_RESOURCE: f"http://{host}/cgi-bin/{path}"})
 
 
-def extract_text(coordinator: ScrapeCoordinator, select: str) -> str | None:
-    """Select and strip a single field's text out of the coordinator's soup."""
+def extract_text(
+    coordinator: ScrapeCoordinator, select: str, attr: str | None = None
+) -> str | None:
+    """Select and strip a single field's text (or attribute) out of the coordinator's soup."""
     soup = coordinator.data
     if soup is None:
         return None
     matches = soup.select(select)
     if not matches:
         return None
+    if attr:
+        return (matches[0].get(attr) or "").strip()
     return matches[0].get_text(strip=True)
 
 
