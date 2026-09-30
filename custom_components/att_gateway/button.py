@@ -15,6 +15,7 @@ from homeassistant.helpers.event import async_call_later
 
 from .api import GatewayAuthError, GatewayClient, GatewayConnectionError
 from .const import RESTART_PATH, SPEED_PATH, SPEED_TEST_DURATION
+from .util import entity_object_id
 
 ENTITY_ID_FORMAT = "button.{}"
 
@@ -52,7 +53,7 @@ class GatewayButton(ButtonEntity):
         self._attr_unique_id = f"att_gateway_{key}"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
-            ENTITY_ID_FORMAT, self._attr_unique_id, hass=hass
+            ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
 
     async def async_press(self) -> None:

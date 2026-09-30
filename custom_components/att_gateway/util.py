@@ -1,6 +1,8 @@
 """Shared helpers for the AT&T Gateway integration."""
 from __future__ import annotations
 
+import re
+
 import voluptuous as vol
 
 from homeassistant.components.rest import RESOURCE_SCHEMA
@@ -31,3 +33,16 @@ def extract_text(coordinator: ScrapeCoordinator, select: str) -> str | None:
     if not matches:
         return None
     return matches[0].get_text(strip=True)
+
+
+# Entity IDs follow the entity name (shared rule with the Xfinity Gateway
+# integration), except that "Wi-Fi 2.4 GHz" becomes "wifi_24ghz" etc.
+_WIFI_BANDS = (("Wi-Fi 2.4 GHz", "wifi_24ghz"), ("Wi-Fi 5 GHz", "wifi_5ghz"), ("Wi-Fi 6 GHz", "wifi_6ghz"))
+
+
+def entity_object_id(name: str) -> str:
+    """Return the entity ID object id (without domain) for an entity name."""
+    for band, replacement in _WIFI_BANDS:
+        name = name.replace(band, replacement)
+    name = name.replace("Wi-Fi", "wifi")
+    return "att_gateway_" + re.sub(r"_+", "_", re.sub(r"[^a-z0-9]+", "_", name.lower())).strip("_")

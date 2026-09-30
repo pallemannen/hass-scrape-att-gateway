@@ -50,7 +50,7 @@ from .const import (
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
 )
-from .util import extract_text as _extract_text
+from .util import entity_object_id, extract_text as _extract_text
 
 _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = "sensor.{}"
@@ -148,7 +148,7 @@ def _init_entity(entity, hass: HomeAssistant, key: str, device_info: DeviceInfo)
     entity._attr_device_info = device_info
     entity._attr_icon = STATIC_ICONS.get(key)
     entity.entity_id = async_generate_entity_id(
-        ENTITY_ID_FORMAT, entity._attr_unique_id, hass=hass
+        ENTITY_ID_FORMAT, entity_object_id(entity._attr_name), hass=hass
     )
 
 
@@ -180,7 +180,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         self._attr_unique_id = f"att_gateway_{field.key}"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
-            ENTITY_ID_FORMAT, self._attr_unique_id, hass=hass
+            ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
         self._static_icon = STATIC_ICONS.get(field.key)
 
@@ -296,7 +296,7 @@ class LastRebootSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         self._attr_unique_id = "att_gateway_last_reboot"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
-            ENTITY_ID_FORMAT, self._attr_unique_id, hass=hass
+            ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
         self._current_time_select = next(
             f.select for f in SYSINFO_FIELDS if f.key == CURRENT_TIME_FIELD_KEY

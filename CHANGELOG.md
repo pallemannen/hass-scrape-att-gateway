@@ -17,7 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- "Model Number" is now called "Model", matching the Xfinity Gateway integration. Entity IDs are unchanged.
+- "Model Number" is now called "Model", matching the Xfinity Gateway integration.
+- Entity IDs now follow the entity name (shared rule with the Xfinity Gateway integration; "Wi-Fi 2.4 GHz" becomes `wifi_24ghz`). Existing entities that still have their old automatic ID are renamed at startup, keeping their history; IDs you renamed yourself are left alone. In practice only `sensor.att_gateway_model_number` changes, to `sensor.att_gateway_model`.
 
 ## [1.0.0] - 2026-08-19
 

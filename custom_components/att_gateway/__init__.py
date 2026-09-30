@@ -27,6 +27,7 @@ from homeassistant.components.scrape.coordinator import ScrapeCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 from .api import GatewayClient
 from .const import (
@@ -42,7 +43,7 @@ from .const import (
 )
 from .coordinator import LockedPageCoordinator
 from .device import build_device_info
-from .util import build_rest_config
+from .util import build_rest_config, entity_object_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,9 +90,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = runtime_data
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _async_migrate_entity_ids(hass, entry)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     return True
+
+
+def _async_migrate_entity_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Rename entity IDs from the old key-based form to the name-based one.
+
+    Up to 1.0.0, entity IDs were "<domain>.<unique_id>" (e.g.
+    sensor.att_gateway_model_number); they now follow the entity name, like
+    the Xfinity Gateway integration's. Only entities still carrying that old
+    auto-generated ID are touched, so IDs renamed by hand are left alone.
+    Runs after the platforms are set up, so original_name is current.
+    """
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+        domain = entity.entity_id.split(".", 1)[0]
+        if entity.entity_id != f"{domain}.{entity.unique_id}" or not entity.original_name:
+            continue
+        new_entity_id = f"{domain}.{entity_object_id(entity.original_name)}"
+        if new_entity_id == entity.entity_id or registry.async_get(new_entity_id):
+            continue
+        _LOGGER.info("Renaming %s to %s", entity.entity_id, new_entity_id)
+        registry.async_update_entity(entity.entity_id, new_entity_id=new_entity_id)
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:

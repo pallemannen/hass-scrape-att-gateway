@@ -22,7 +22,7 @@ from .const import (
     ICON_INACTIVE,
     STATUS_FIELDS,
 )
-from .util import extract_text
+from .util import entity_object_id, extract_text
 
 ENTITY_ID_FORMAT = "binary_sensor.{}"
 
@@ -68,7 +68,7 @@ class GatewayConnectivitySensor(CoordinatorEntity[ScrapeCoordinator], BinarySens
         self._attr_unique_id = "att_gateway_connectivity"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
-            ENTITY_ID_FORMAT, self._attr_unique_id, hass=hass
+            ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
         self._select = next(
             f.select for f in STATUS_FIELDS if f.key == CONNECTION_STATUS_FIELD_KEY
@@ -105,7 +105,7 @@ class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
         self._attr_unique_id = f"att_gateway_{field.key}"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
-            ENTITY_ID_FORMAT, self._attr_unique_id, hass=hass
+            ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
 
     @property
