@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The On/Off binary sensors (DHCP server, bridge mode, packet filter, NAT default server, Firewall Advanced) get their own state-dependent icons instead of the default check mark.
 - LAN port status and LAN netmask use `mdi:lan`, and Wi-Fi status switches between `mdi:wifi`/`mdi:wifi-off`, matching the Xfinity Gateway integration.
 
+### Fixed
+
+- PON Link Status had no icon (invalid icon name); it now uses `mdi:wan`.
+
 ## [1.1.0] - 2026-09-30
 
 ### Added

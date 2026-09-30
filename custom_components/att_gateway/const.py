@@ -340,7 +340,7 @@ STATIC_ICONS: dict[str, str] = {
     "external_ipv6_default_gateway": "mdi:play-network-outline",
     "primary_ipv6_dns": "mdi:dns-outline",
     "secondary_ipv6_dns": "mdi:dns-outline",
-    "pon_link_status": "mdi:fiber-manual-record",
+    "pon_link_status": "mdi:wan",
     "lan_ip_address": "mdi:ip-network-outline",
     "lan_netmask": "mdi:lan",
     "dhcp_leases_available": "mdi:counter",
