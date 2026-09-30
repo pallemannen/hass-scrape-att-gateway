@@ -6,6 +6,7 @@ import hashlib
 import re
 
 import aiohttp
+from bs4 import BeautifulSoup
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -30,6 +31,29 @@ class GatewayAuthError(Exception):
 def _nonce(body: str) -> str | None:
     match = _NONCE_RE.search(body)
     return (match.group(1) or match.group(2)) if match else None
+
+
+def _form_values(body: str, path: str) -> dict[str, str]:
+    """Current values of the form posting to `path` (text, hidden, selects, checked boxes)."""
+    form = BeautifulSoup(body, "html.parser").select_one(f'form[action$="{path}"]')
+    if form is None:
+        return {}
+    values: dict[str, str] = {}
+    for el in form.select("input[name], select[name], textarea[name]"):
+        name = el["name"]
+        if el.name == "select":
+            option = el.select_one("option[selected]") or el.select_one("option")
+            values[name] = option.get("value", option.get_text(strip=True)) if option else ""
+        elif el.name == "textarea":
+            values[name] = el.get_text()
+        elif el.get("type") in ("submit", "button", "image", "reset"):
+            continue
+        elif el.get("type") in ("checkbox", "radio"):
+            if el.has_attr("checked"):
+                values[name] = el.get("value", "on")
+        else:
+            values[name] = el.get("value", "")
+    return values
 
 
 class GatewayClient:
@@ -97,6 +121,23 @@ class GatewayClient:
             if nonce is None:
                 raise GatewayConnectionError(f"No form nonce on {path}")
             return await self._request("POST", path, {"nonce": nonce, **fields})
+
+    async def async_save_form(
+        self, path: str, changes: dict[str, str], submit: tuple[str, str]
+    ) -> str:
+        """Re-submit a settings form with all its current values, except `changes`.
+
+        Settings pages save every field at once, so anything not sent back
+        would be reset.
+        """
+        async with self._lock:
+            body = await self._get_page(path)
+            fields = _form_values(body, path)
+            if "nonce" not in fields:
+                raise GatewayConnectionError(f"No form nonce on {path}")
+            fields.update(changes)
+            fields[submit[0]] = submit[1]
+            return await self._request("POST", path, fields)
 
     async def async_validate(self) -> None:
         """Log in once, raising GatewayAuthError/GatewayConnectionError on failure."""

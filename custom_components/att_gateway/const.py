@@ -25,6 +25,11 @@ SPEED_PATH = "speed.ha"
 RESTART_PATH = "restart.ha"
 IPV6_PATH = "ip6lan.ha"
 PASSTHROUGH_PATH = "ippass.ha"
+WIFI_PATH = "wconfig.ha"
+MAC_FILTER_PATH = "wmacauth.ha"
+PACKET_FILTER_PATH = "packetfilter.ha"
+APP_HOSTING_PATH = "apphosting.ha"
+CUSTOM_SERVICES_PATH = "services.ha"
 
 # Seconds until a speed test result shows up.
 SPEED_TEST_DURATION = 60
@@ -332,6 +337,32 @@ PASSTHROUGH_FIELDS: tuple[GatewayField, ...] = (
 )
 PASSTHROUGH_LEASE_INPUTS = {"dhcpday": 86400, "dhcphour": 3600, "dhcpmin": 60, "dhcpsec": 1}
 
+# wconfig.ha (needs the Device Access Code): SSIDs and on/off switches.
+WIFI_SSID_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("wifi_24ghz_ssid", "Wi-Fi 2.4 GHz SSID", 'input[name="ssidname11"]', attr="value"),
+    GatewayField("wifi_5ghz_ssid", "Wi-Fi 5 GHz SSID", 'input[name="ssidname21"]', attr="value"),
+    GatewayField("guest_wifi_ssid", "Guest Wi-Fi SSID", 'input[name="ssidname12"]', attr="value"),
+)
+# (key, name, form field)
+WIFI_SWITCHES = (
+    ("wifi_24ghz", "Wi-Fi 2.4 GHz", "wl80211on"),
+    ("wifi_5ghz", "Wi-Fi 5 GHz", "wl80211on_5"),
+    ("guest_wifi", "Guest Wi-Fi", "gssidenable"),
+)
+WIFI_SAVE_BUTTON = ("Save", "Save...")
+
+# Lists on locked pages, counted as "Number of ..." sensors: (key, name, path, table).
+LIST_COUNTS = (
+    ("mac_filter_entries", "Number of MAC Filter Entries", MAC_FILTER_PATH,
+     'table[summary*="Table of existing filters"]'),
+    ("hosted_applications", "Number of Hosted Applications", APP_HOSTING_PATH,
+     'table[summary*="current hosted applications"]'),
+    ("custom_services", "Number of Custom Services", CUSTOM_SERVICES_PATH,
+     'table[summary*="existing custom services"]'),
+)
+# Packet filter rules: numbered rows, followed by their match rows.
+PACKET_FILTER_TABLE = 'table[summary*="packetfilter"]'
+
 # nattable.ha (needs the Device Access Code).
 _NAT_TABLE = 'table[summary*="summary of session information"]'
 NAT_FIELDS: tuple[GatewayField, ...] = (
@@ -441,6 +472,13 @@ STATIC_ICONS: dict[str, str] = {
     "passthrough_mode": "mdi:bridge",
     "passthrough_fixed_mac_address": "mdi:barcode",
     "passthrough_dhcp_lease": "mdi:timer-outline",
+    "wifi_24ghz_ssid": "mdi:access-point-network",
+    "wifi_5ghz_ssid": "mdi:access-point-network",
+    "guest_wifi_ssid": "mdi:access-point-network",
+    "mac_filter_entries": "mdi:playlist-remove",
+    "hosted_applications": "mdi:arrow-decision",
+    "custom_services": "mdi:arrow-decision",
+    "packet_filter_rules": "mdi:filter",
     **{f"lan_{port}_{d}_{k}": "mdi:download-network-outline" if d == "receive" else "mdi:upload-network-outline"
        for port in range(1, 5) for d in ("receive", "transmit") for k in ("packets", "bytes", "dropped", "errors")},
     "lan_ip_address": "mdi:ip-network-outline",

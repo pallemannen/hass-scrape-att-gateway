@@ -48,7 +48,9 @@ from .const import (
     LAN_PORT_SPEED_FIELD_KEYS,
     LAST_REBOOT_ICON,
     LINK_SPEED_FIELD_KEYS,
+    LIST_COUNTS,
     NAT_FIELDS,
+    PACKET_FILTER_TABLE,
     PASSTHROUGH_FIELDS,
     PASSTHROUGH_LEASE_INPUTS,
     RA_MTU_FIELD,
@@ -58,6 +60,7 @@ from .const import (
     STATUS_FIELDS,
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
+    WIFI_SSID_FIELDS,
     WIFI_STATUS_FIELD_KEYS,
 )
 from .util import entity_object_id, extract_text as _extract_text
@@ -116,6 +119,7 @@ async def async_setup_entry(
         (entry.runtime_data.get("nat"), NAT_FIELDS),
         (entry.runtime_data.get("ipv6"), (RA_MTU_FIELD,)),
         (entry.runtime_data.get("passthrough"), PASSTHROUGH_FIELDS),
+        (entry.runtime_data.get("wifi"), WIFI_SSID_FIELDS),
     ):
         if coordinator is None:
             continue
@@ -154,6 +158,11 @@ async def async_setup_entry(
 
     if (coordinator_passthrough := entry.runtime_data.get("passthrough")) is not None:
         entities.append(PassthroughLeaseSensor(hass, coordinator_passthrough, device_info))
+    for key, name, _, table in LIST_COUNTS:
+        if (coordinator := entry.runtime_data.get(key)) is not None:
+            entities.append(ListCountSensor(hass, coordinator, device_info, key, name, table))
+    if (coordinator_pf := entry.runtime_data.get("packet_filter")) is not None:
+        entities.append(PacketFilterRulesSensor(hass, coordinator_pf, device_info))
 
     async_add_entities(entities)
 
@@ -525,3 +534,92 @@ class PassthroughLeaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEnt
                 return None
             total += value * seconds
         return total
+
+
+class ListCountSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+    """Number of entries in a list table; the entries' cell texts as an attribute."""
+
+    _attr_has_entity_name = True
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        coordinator: DataUpdateCoordinator,
+        device_info: DeviceInfo,
+        key: str,
+        name: str,
+        table: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._attr_name = name
+        self._table = table
+        _init_entity(self, hass, key, device_info)
+
+    def _entries(self) -> list[str] | None:
+        if self.coordinator.data is None:
+            return None
+        # The empty list is a single <th> row ("No ... entries have been defined").
+        return [
+            " | ".join(td.get_text(" ", strip=True) for td in tr.select("td"))
+            for tr in self.coordinator.data.select(f"{self._table} tr")
+            if tr.select("td")
+        ]
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of entries."""
+        entries = self._entries()
+        return len(entries) if entries is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[str]] | None:
+        """Return the entries."""
+        entries = self._entries()
+        return {"entries": entries} if entries else None
+
+
+class PacketFilterRulesSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+    """Number of packet filter rules that have at least one match condition.
+
+    Each rule is a numbered row followed by rows for its match conditions;
+    empty rule slots are shown too, so those aren't counted.
+    """
+
+    _attr_has_entity_name = True
+    _attr_name = "Number of Packet Filter Rules"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self, hass: HomeAssistant, coordinator: DataUpdateCoordinator, device_info: DeviceInfo
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        _init_entity(self, hass, "packet_filter_rules", device_info)
+
+    def _rules(self) -> list[str] | None:
+        if self.coordinator.data is None:
+            return None
+        rules: list[list[str]] = []
+        for tr in self.coordinator.data.select(f"{PACKET_FILTER_TABLE} tr"):
+            cells = [td.get_text(" ", strip=True) for td in tr.select("td")]
+            if not cells:
+                continue
+            if cells[0].isdigit():
+                rules.append([])
+            elif rules and any(cells):
+                rules[-1].append(" ".join(c for c in cells if c))
+        return [" / ".join(r) for r in rules if r]
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of non-empty rules."""
+        rules = self._rules()
+        return len(rules) if rules is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[str]] | None:
+        """Return the rules' match conditions."""
+        rules = self._rules()
+        return {"rules": rules} if rules else None
