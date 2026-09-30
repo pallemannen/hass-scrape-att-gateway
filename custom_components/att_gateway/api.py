@@ -56,6 +56,12 @@ def _form_values(body: str, path: str) -> dict[str, str]:
     return values
 
 
+def _has_input(body: str, path: str, name: str) -> bool:
+    """Whether the form posting to `path` has an input called `name`."""
+    form = BeautifulSoup(body, "html.parser").select_one(f'form[action$="{path}"]')
+    return form is not None and form.select_one(f'input[name="{name}"]') is not None
+
+
 class GatewayClient:
     """Cookie-based session for the gateway's locked pages."""
 
@@ -137,7 +143,14 @@ class GatewayClient:
                 raise GatewayConnectionError(f"No form nonce on {path}")
             fields.update(changes)
             fields[submit[0]] = submit[1]
-            return await self._request("POST", path, fields)
+            body = await self._request("POST", path, fields)
+            # Wi-Fi changes come back as a warning page that must be confirmed.
+            confirm = _form_values(body, path)
+            if "nonce" in confirm and _has_input(body, path, "Continue"):
+                body = await self._request(
+                    "POST", path, {"nonce": confirm["nonce"], "Continue": "Continue"}
+                )
+            return body
 
     async def async_validate(self) -> None:
         """Log in once, raising GatewayAuthError/GatewayConnectionError on failure."""

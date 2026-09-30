@@ -43,6 +43,8 @@ No YAML editing or manually edited config files needed - everything is set up th
 
 **With the Device Access Code**
 - NAT sessions available/in use
+- **Wi-Fi switches** for 2.4 GHz, 5 GHz and the guest network, plus their SSIDs
+- Number of MAC filter entries, packet filter rules, hosted applications and custom services
 - IPv6, DHCPv6 and prefix delegation settings, router advertisement MTU
 - Passthrough settings: allocation mode, passthrough mode, fixed MAC address, DHCP lease
 - Latest speed test: download, upload, and when it ran

@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Per-port LAN traffic counters: transmit/receive packets, bytes, dropped and errors (ports 2-4 disabled by default).
 - Fiber status, fiber link state, and a "Fiber Alarm" problem sensor that is on when any of the fiber module's alarm/warning counters is non-zero.
 - MTU and IPv6 MTU (disabled by default).
+- With the access code: Wi-Fi 2.4 GHz, Wi-Fi 5 GHz and Guest Wi-Fi switches, and their SSIDs.
+- With the access code: the number of MAC filter entries, packet filter rules, hosted applications and custom services, with the entries as attributes.
 - With the access code: IPv6, DHCPv6 and DHCPv6 prefix delegation settings (binary sensors), router advertisement MTU (disabled by default), and the passthrough settings: allocation mode, passthrough mode, fixed MAC address and DHCP lease.
 
 ### Changed

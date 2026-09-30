@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 import logging
+import re
 import socket
 
 from homeassistant.components.scrape.coordinator import ScrapeCoordinator
@@ -175,6 +176,10 @@ def _init_entity(entity, hass: HomeAssistant, key: str, device_info: DeviceInfo)
     entity.entity_id = async_generate_entity_id(
         ENTITY_ID_FORMAT, entity_object_id(entity._attr_name), hass=hass
     )
+
+
+def _cell_text(td) -> str:
+    return re.sub(r"\s+", " ", td.get_text(" ", strip=True))
 
 
 def _parse_int(raw: str | None) -> int | None:
@@ -562,7 +567,7 @@ class ListCountSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
             return None
         # The empty list is a single <th> row ("No ... entries have been defined").
         return [
-            " | ".join(td.get_text(" ", strip=True) for td in tr.select("td"))
+            " | ".join(cell for cell in map(_cell_text, tr.select("td")) if cell)
             for tr in self.coordinator.data.select(f"{self._table} tr")
             if tr.select("td")
         ]
@@ -603,7 +608,7 @@ class PacketFilterRulesSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEn
             return None
         rules: list[list[str]] = []
         for tr in self.coordinator.data.select(f"{PACKET_FILTER_TABLE} tr"):
-            cells = [td.get_text(" ", strip=True) for td in tr.select("td")]
+            cells = [_cell_text(td) for td in tr.select("td")]
             if not cells:
                 continue
             if cells[0].isdigit():
