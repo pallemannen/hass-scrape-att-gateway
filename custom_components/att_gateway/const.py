@@ -345,7 +345,7 @@ STATIC_ICONS: dict[str, str] = {
     "secondary_ipv6_dns": "mdi:dns-outline",
     "pon_link_status": "mdi:wan",
     "lan_ip_address": "mdi:ip-network-outline",
-    "lan_netmask": "mdi:ip-network-outline",
+    "lan_netmask": "mdi:slash-forward-box",
     "dhcp_leases_available": "mdi:counter",
     "dhcp_leases_allocated": "mdi:counter",
     "ip_passthrough_address": "mdi:ip-network-outline",
