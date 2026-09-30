@@ -4,20 +4,29 @@
       "user": {
         "data": {
           "host": "Gateway IP address",
-          "name": "Device name"
+          "name": "Device name",
+          "access_code": "Device Access Code (optional)"
+        },
+        "data_description": {
+          "access_code": "Needed only for the NAT table, speed test and restart. Leave empty to skip."
         }
       },
       "reconfigure": {
         "data": {
           "host": "Gateway IP address",
-          "name": "Device name"
+          "name": "Device name",
+          "access_code": "Device Access Code (optional)"
+        },
+        "data_description": {
+          "access_code": "Needed only for the NAT table, speed test and restart. Leave empty to skip."
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect to the gateway. Check the IP address and that it's reachable.",
       "not_a_gateway": "Connected, but the response didn't look like an AT&T gateway's System Information page.",
-      "unknown": "Unexpected error, check the Home Assistant logs for details."
+      "unknown": "Unexpected error, check the Home Assistant logs for details.",
+      "invalid_access_code": "The gateway rejected the Device Access Code. It's printed on the gateway's label."
     },
     "abort": {
       "already_configured": "AT&T Gateway is already configured.",

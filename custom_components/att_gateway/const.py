@@ -9,10 +9,22 @@ CONF_HOST = "host"
 DEFAULT_HOST = "192.168.1.254"
 CONF_NAME = "name"
 DEFAULT_NAME = "AT&T Gateway"
+CONF_ACCESS_CODE = "access_code"
 DEFAULT_SCAN_INTERVAL = 300
 
 SYSINFO_PATH = "sysinfo.ha"
 STATUS_PATH = "broadbandstatistics.ha"
+LAN_PATH = "lanstatistics.ha"
+FIREWALL_PATH = "firewall.ha"
+
+# Pages behind the Device Access Code (see api.py).
+LOGIN_PATH = "login.ha"
+NAT_PATH = "nattable.ha"
+SPEED_PATH = "speed.ha"
+RESTART_PATH = "restart.ha"
+
+# Seconds until a speed test result shows up.
+SPEED_TEST_DURATION = 60
 
 # The gateway reports both of these as plain ISO-ish strings with no
 # separate "T" handling needed except for Current Date/Time, which uses a
@@ -39,7 +51,7 @@ SYSINFO_FIELDS: tuple[GatewayField, ...] = (
         "manufacturer", "Manufacturer", "table:nth-of-type(1) tr:nth-child(1) td:nth-child(2)"
     ),
     GatewayField(
-        "model_number", "Model Number", "table:nth-of-type(1) tr:nth-child(2) td:nth-child(2)"
+        "model_number", "Model", "table:nth-of-type(1) tr:nth-child(2) td:nth-child(2)"
     ),
     GatewayField(
         "serial_number", "Serial Number", "table:nth-of-type(1) tr:nth-child(3) td:nth-child(2)"
@@ -145,7 +157,116 @@ STATUS_FIELDS: tuple[GatewayField, ...] = (
         "Transmit Unicast",
         'table[summary*="IPv4 Statistics"] tr:nth-child(6) td:nth-child(2)',
     ),
+    GatewayField(
+        "broadband_source",
+        "Broadband Source",
+        'table[summary*="WAN"] tr:nth-child(1) td:nth-child(2)',
+    ),
+    GatewayField(
+        "external_link_speed",
+        "External Link Speed",
+        'table[summary*="Ethernet Statistics"] tr:nth-child(2) td:nth-child(2)',
+    ),
+    GatewayField(
+        "external_ipv6_default_gateway",
+        "External IPv6 Default Gateway",
+        'table[summary*="IPv6 Table"] tr:nth-child(5) td:nth-child(2)',
+    ),
+    GatewayField(
+        "primary_ipv6_dns",
+        "Primary IPv6 DNS",
+        'table[summary*="IPv6 Table"] tr:nth-child(6) td:nth-child(2)',
+    ),
+    GatewayField(
+        "secondary_ipv6_dns",
+        "Secondary IPv6 DNS",
+        'table[summary*="IPv6 Table"] tr:nth-child(7) td:nth-child(2)',
+    ),
+    GatewayField(
+        "pon_link_status",
+        "PON Link Status",
+        'table[summary*="GPON"] tr:nth-child(1) td:nth-child(2)',
+    ),
 )
+
+# lanstatistics.ha
+_LAN_TABLE = 'table[summary*="critical LAN status"]'
+_LAN_IPV6_TABLE = 'table[summary*="IPv6 LAN information"]'
+_LAN_PORTS_TABLE = 'table[summary*="LAN Ethernet Statistics"]'
+# Unclosed header <tr> on this table, so select cells by class.
+_WIFI_TABLE = 'table[summary*="Wi-Fi status"]'
+LAN_INTERFACES_TABLE = 'table[summary*="LAN Interfaces"]'
+
+LAN_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("lan_ip_address", "LAN IP Address", f"{_LAN_TABLE} tr:nth-child(1) td"),
+    GatewayField("lan_netmask", "LAN Netmask", f"{_LAN_TABLE} tr:nth-child(2) td"),
+    GatewayField(
+        "dhcp_leases_available", "DHCP Leases Available", f"{_LAN_TABLE} tr:nth-child(6) td"
+    ),
+    GatewayField(
+        "dhcp_leases_allocated", "DHCP Leases Allocated", f"{_LAN_TABLE} tr:nth-child(7) td"
+    ),
+    GatewayField(
+        "ip_passthrough_address", "IP Passthrough Address", f"{_LAN_TABLE} tr:nth-child(13) td"
+    ),
+    GatewayField(
+        "lan_ipv6_address", "LAN IPv6 Address", f"{_LAN_IPV6_TABLE} tr:nth-child(2) td"
+    ),
+    GatewayField("lan_ipv6_subnet", "LAN IPv6 Subnet", f"{_LAN_IPV6_TABLE} tr:nth-child(4) td"),
+    GatewayField(
+        "delegated_ipv6_prefix", "Delegated IPv6 Prefix", f"{_LAN_IPV6_TABLE} tr:nth-child(5) td"
+    ),
+    GatewayField(
+        "wifi_24ghz_status", "Wi-Fi 2.4 GHz Status", f"{_WIFI_TABLE} td.col2:nth-of-type(2)"
+    ),
+    GatewayField(
+        "wifi_5ghz_status", "Wi-Fi 5 GHz Status", f"{_WIFI_TABLE} td.col2:nth-of-type(3)"
+    ),
+    *(
+        GatewayField(
+            f"lan_{port}_connection_status",
+            f"LAN {port} Connection Status",
+            f"{_LAN_PORTS_TABLE} tr:nth-child(2) td:nth-child({port + 1})",
+        )
+        for port in range(1, 5)
+    ),
+    *(
+        GatewayField(
+            f"lan_{port}_speed",
+            f"LAN {port} Speed",
+            f"{_LAN_PORTS_TABLE} tr:nth-child(3) td:nth-child({port + 1})",
+        )
+        for port in range(1, 5)
+    ),
+)
+
+# "On"/"Off" status rows, exposed as binary sensors.
+_FIREWALL_TABLE = 'table[summary*="Packet Filter"]'
+FIREWALL_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("packet_filter", "Packet Filter", f"{_FIREWALL_TABLE} tr:nth-child(1) td"),
+    GatewayField("ip_passthrough", "IP Passthrough", f"{_FIREWALL_TABLE} tr:nth-child(2) td"),
+    GatewayField(
+        "nat_default_server", "NAT Default Server", f"{_FIREWALL_TABLE} tr:nth-child(3) td"
+    ),
+    GatewayField(
+        "firewall_advanced", "Firewall Advanced", f"{_FIREWALL_TABLE} tr:nth-child(4) td"
+    ),
+)
+DHCP_SERVER_FIELD = GatewayField("dhcp_server", "DHCP Server", f"{_LAN_TABLE} tr:nth-child(3) td")
+
+# nattable.ha (needs the Device Access Code).
+_NAT_TABLE = 'table[summary*="summary of session information"]'
+NAT_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField(
+        "nat_sessions_available", "NAT Sessions Available", f"{_NAT_TABLE} tr:nth-child(1) td"
+    ),
+    GatewayField("nat_sessions_in_use", "NAT Sessions In Use", f"{_NAT_TABLE} tr:nth-child(2) td"),
+)
+
+# speed.ha (needs the Device Access Code): newest first, one row per direction.
+# The latency column isn't used; its values are unreliable.
+SPEED_TABLE = 'table[summary*="Speed Test Result History"]'
+SPEED_TIME_FORMAT = "%m/%d/%Y %H:%M:%S"
 
 CONNECTION_STATUS_FIELD_KEY = "connection_status"
 
@@ -162,6 +283,19 @@ COUNTER_FIELD_KEYS = frozenset(
     }
 )
 BYTE_FIELD_KEYS = frozenset({"receive_bytes", "transmit_bytes"})
+
+# Plain integer gauges (not counters).
+GAUGE_FIELD_KEYS = frozenset(
+    {
+        "dhcp_leases_available",
+        "dhcp_leases_allocated",
+        "nat_sessions_available",
+        "nat_sessions_in_use",
+    }
+)
+# Link speeds: the WAN one is reported in Mbps, the LAN ports in bit/s.
+LINK_SPEED_FIELD_KEYS = frozenset({"external_link_speed"})
+LAN_PORT_SPEED_FIELD_KEYS = frozenset(f"lan_{port}_speed" for port in range(1, 5))
 
 ICON_ACTIVE = "mdi:check-network-outline"
 ICON_INACTIVE = "mdi:close-network-outline"
@@ -188,4 +322,30 @@ STATIC_ICONS: dict[str, str] = {
     "transmit_bytes": "mdi:upload-network-outline",
     "receive_unicast": "mdi:download-network-outline",
     "transmit_unicast": "mdi:upload-network-outline",
+    "ip_address": "mdi:ip-network-outline",
+    "broadband_source": "mdi:transit-connection-variant",
+    "external_link_speed": "mdi:speedometer",
+    "external_ipv6_default_gateway": "mdi:play-network-outline",
+    "primary_ipv6_dns": "mdi:dns-outline",
+    "secondary_ipv6_dns": "mdi:dns-outline",
+    "pon_link_status": "mdi:fiber-manual-record",
+    "lan_ip_address": "mdi:ip-network-outline",
+    "lan_netmask": "mdi:ip-network-outline",
+    "dhcp_leases_available": "mdi:counter",
+    "dhcp_leases_allocated": "mdi:counter",
+    "ip_passthrough_address": "mdi:ip-network-outline",
+    "lan_ipv6_address": "mdi:ip-network-outline",
+    "lan_ipv6_subnet": "mdi:ip-network-outline",
+    "delegated_ipv6_prefix": "mdi:ip-network-outline",
+    "wifi_24ghz_status": "mdi:wifi",
+    "wifi_5ghz_status": "mdi:wifi",
+    "active_client_count": "mdi:devices",
+    "inactive_client_count": "mdi:devices",
+    "nat_sessions_available": "mdi:swap-horizontal",
+    "nat_sessions_in_use": "mdi:swap-horizontal",
+    "speed_test_download": "mdi:download-network-outline",
+    "speed_test_upload": "mdi:upload-network-outline",
+    "last_speed_test": "mdi:speedometer",
+    **{f"lan_{port}_connection_status": "mdi:ethernet" for port in range(1, 5)},
+    **{f"lan_{port}_speed": "mdi:speedometer" for port in range(1, 5)},
 }

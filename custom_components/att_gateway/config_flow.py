@@ -1,11 +1,12 @@
 """Config flow for the AT&T Gateway integration.
 
-No credentials to collect - this gateway's status pages aren't behind a
-login. Validation just fetches the System Information page and checks for
+The only credential is the optional Device Access Code, used for the few
+locked pages. Validation fetches the System Information page and checks for
 a "Manufacturer" row, using the same RESOURCE_SCHEMA/create_rest_data_from_config
 building blocks the rest of this integration reuses from
 homeassistant.components.rest - so a wrong/unreachable host, or a host that
 answers but isn't actually this gateway, is caught immediately in the UI.
+If an access code is given, it's checked with a real login.
 """
 from __future__ import annotations
 
@@ -18,8 +19,22 @@ from homeassistant.components.rest import create_rest_data_from_config
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 
-from .const import CONF_HOST, CONF_NAME, DEFAULT_HOST, DEFAULT_NAME, DOMAIN, SYSINFO_PATH
+from .api import GatewayAuthError, GatewayClient, GatewayConnectionError
+from .const import (
+    CONF_ACCESS_CODE,
+    CONF_HOST,
+    CONF_NAME,
+    DEFAULT_HOST,
+    DEFAULT_NAME,
+    DOMAIN,
+    SYSINFO_PATH,
+)
 from .util import build_rest_config
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,6 +43,9 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_HOST, default=DEFAULT_HOST): str,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
+        vol.Optional(CONF_ACCESS_CODE): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
     }
 )
 
@@ -42,6 +60,10 @@ class CannotConnect(HomeAssistantError):
 
 class NotAGateway(HomeAssistantError):
     """Error to indicate the host answered but doesn't look like this gateway."""
+
+
+class InvalidAccessCode(HomeAssistantError):
+    """Error to indicate the gateway rejected the Device Access Code."""
 
 
 async def _async_validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
@@ -59,6 +81,17 @@ async def _async_validate_input(hass: HomeAssistant, data: dict[str, Any]) -> No
 
     if EXPECTED_MARKER not in rest.data:
         raise NotAGateway
+
+    if access_code := data.get(CONF_ACCESS_CODE):
+        client = GatewayClient(hass, host, access_code)
+        try:
+            await client.async_validate()
+        except GatewayAuthError as ex:
+            raise InvalidAccessCode from ex
+        except GatewayConnectionError as ex:
+            raise CannotConnect from ex
+        finally:
+            await client.async_close()
 
 
 class AttGatewayConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -82,12 +115,16 @@ class AttGatewayConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            if not user_input.get(CONF_ACCESS_CODE):
+                user_input.pop(CONF_ACCESS_CODE, None)
             try:
                 await _async_validate_input(self.hass, user_input)
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except NotAGateway:
                 errors["base"] = "not_a_gateway"
+            except InvalidAccessCode:
+                errors["base"] = "invalid_access_code"
             except Exception:  # noqa: BLE001 - genuinely unknown failure, surface generically
                 _LOGGER.exception("Unexpected exception during AT&T Gateway setup")
                 errors["base"] = "unknown"

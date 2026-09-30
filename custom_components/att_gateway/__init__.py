@@ -10,11 +10,10 @@ reimplementing them:
   `RestData` in a `DataUpdateCoordinator` that fetches on an interval and
   parses the response into a `BeautifulSoup` document.
 
-Unlike the multiscrape-based Xfinity Gateway integration, this gateway needs
-no authentication at all (its status pages are served without a login), so
-there's no shared HTTP session or credential validation to manage - just two
-independent coordinators, one per status page, each built the same way
-`scrape`'s own `async_setup_entry` builds its own coordinator.
+Most status pages are served without a login, so each gets its own
+independent ScrapeCoordinator, built the same way `scrape`'s own
+`async_setup_entry` builds its own coordinator. Pages behind the Device
+Access Code go through `api.GatewayClient` instead.
 """
 from __future__ import annotations
 
@@ -26,14 +25,27 @@ from homeassistant.components.scrape.coordinator import ScrapeCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
-from .const import CONF_HOST, DEFAULT_SCAN_INTERVAL, DOMAIN, STATUS_PATH, SYSINFO_PATH
+from .api import GatewayClient
+from .const import (
+    CONF_ACCESS_CODE,
+    CONF_HOST,
+    DEFAULT_SCAN_INTERVAL,
+    FIREWALL_PATH,
+    LAN_PATH,
+    NAT_PATH,
+    SPEED_PATH,
+    STATUS_PATH,
+    SYSINFO_PATH,
+)
+from .coordinator import LockedPageCoordinator
 from .device import build_device_info
-from .util import build_rest_config
+from .util import build_rest_config, entity_object_id
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.BUTTON]
 
 
 async def _async_build_coordinator(
@@ -54,18 +66,45 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     host = entry.data[CONF_HOST]
 
     coordinator_sysinfo = await _async_build_coordinator(hass, entry, host, SYSINFO_PATH)
-    coordinator_status = await _async_build_coordinator(hass, entry, host, STATUS_PATH)
-
-    entry.runtime_data = {
+    runtime_data = {
         "sysinfo": coordinator_sysinfo,
-        "status": coordinator_status,
+        "status": await _async_build_coordinator(hass, entry, host, STATUS_PATH),
+        "lan": await _async_build_coordinator(hass, entry, host, LAN_PATH),
+        "firewall": await _async_build_coordinator(hass, entry, host, FIREWALL_PATH),
         "device_info": build_device_info(entry, coordinator_sysinfo),
+        "client": None,
     }
 
+    if access_code := entry.data.get(CONF_ACCESS_CODE):
+        client = GatewayClient(hass, host, access_code)
+        runtime_data["client"] = client
+        for key, path in (("nat", NAT_PATH), ("speed", SPEED_PATH)):
+            coordinator = LockedPageCoordinator(hass, entry, client, path)
+            # A rejected code shouldn't take down the open-page entities.
+            await coordinator.async_refresh()
+            runtime_data[key] = coordinator
+
+    entry.runtime_data = runtime_data
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _async_migrate_entity_ids(hass, entry)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     return True
+
+
+def _async_migrate_entity_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Rename old key-based entity IDs to name-based ones, unless renamed by hand."""
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+        domain = entity.entity_id.split(".", 1)[0]
+        if entity.entity_id != f"{domain}.{entity.unique_id}" or not entity.original_name:
+            continue
+        new_entity_id = f"{domain}.{entity_object_id(entity.original_name)}"
+        if new_entity_id == entity.entity_id or registry.async_get(new_entity_id):
+            continue
+        _LOGGER.info("Renaming %s to %s", entity.entity_id, new_entity_id)
+        registry.async_update_entity(entity.entity_id, new_entity_id=new_entity_id)
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -75,4 +114,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded and (client := entry.runtime_data.get("client")):
+        await client.async_close()
+    return unloaded

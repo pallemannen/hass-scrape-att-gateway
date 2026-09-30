@@ -4,20 +4,29 @@
       "user": {
         "data": {
           "host": "Internetgatewayens IP-adress",
-          "name": "Enhetsnamn"
+          "name": "Enhetsnamn",
+          "access_code": "Enhetens åtkomstkod (Device Access Code, valfri)"
+        },
+        "data_description": {
+          "access_code": "Behövs bara för NAT-tabellen, hastighetstest och omstart. Lämna tomt för att hoppa över."
         }
       },
       "reconfigure": {
         "data": {
           "host": "Internetgatewayens IP-adress",
-          "name": "Enhetsnamn"
+          "name": "Enhetsnamn",
+          "access_code": "Enhetens åtkomstkod (Device Access Code, valfri)"
+        },
+        "data_description": {
+          "access_code": "Behövs bara för NAT-tabellen, hastighetstest och omstart. Lämna tomt för att hoppa över."
         }
       }
     },
     "error": {
       "cannot_connect": "Kunde inte ansluta till gatewayen. Kontrollera IP-adressen och att den är nåbar.",
       "not_a_gateway": "Anslutningen lyckades, men svaret såg inte ut som en AT&T-gateways sida för systeminformation.",
-      "unknown": "Oväntat fel, kontrollera loggarna i Home Assistant för detaljer."
+      "unknown": "Oväntat fel, kontrollera loggarna i Home Assistant för detaljer.",
+      "invalid_access_code": "Gatewayen avvisade åtkomstkoden. Den står på gatewayens etikett."
     },
     "abort": {
       "already_configured": "AT&T Gateway är redan installerad.",
