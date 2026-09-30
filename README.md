@@ -8,7 +8,7 @@ A Home Assistant integration for monitoring an AT&T Internet Gateway (e.g. BGW32
 
 ## Gateway compatibility
 
-Developed and tested against a BGW320-500 running firmware 6.34.7. The gateway's status pages (`/cgi-bin/sysinfo.ha` and `/cgi-bin/broadbandstatistics.ha`) require no login, so this should work unmodified against any AT&T gateway that serves the same pages. Please open an issue if a field doesn't scrape correctly on your model.
+Developed and tested against a BGW320-500 running firmware 6.34.7. Most of the gateway's status pages (`sysinfo.ha`, `broadbandstatistics.ha`, `lanstatistics.ha`, `firewall.ha`) require no login, so this should work unmodified against any AT&T gateway that serves the same pages. Also tested on firmware 6.35.8. Please open an issue if a field doesn't scrape correctly on your model.
 
 ## Installation
 
@@ -17,8 +17,9 @@ Developed and tested against a BGW320-500 running firmware 6.34.7. The gateway's
 3. Go to **Settings → Devices & Services → Add Integration**, search for "AT&T Gateway", and fill in:
    - **Gateway IP address** (defaults to `192.168.1.254` - change it if yours is different)
    - **Device name** (defaults to `AT&T Gateway` - change it if you want something else)
+   - **Device Access Code** (optional, printed on the gateway's label) - only needed for the NAT table, speed test and restart. Leave it empty to skip them. It can be added later via **Reconfigure**.
 
-   The address is checked against the gateway during setup, so you'll see an error right away if it's wrong or unreachable, rather than ending up with sensors that silently never update.
+   The address (and the access code, if given) is checked against the gateway during setup, so you'll see an error right away if it's wrong or unreachable, rather than ending up with sensors that silently never update.
 
 No YAML editing or manually edited config files needed - everything is set up through the UI.
 
@@ -26,12 +27,23 @@ No YAML editing or manually edited config files needed - everything is set up th
 
 **Sensors**
 - Connection status, current time, system uptime, last reboot
-- External IP and IPv6 addresses, default gateway, primary/secondary DNS
+- External IP and IPv6 addresses, default gateways, primary/secondary DNS (IPv4 and IPv6), broadband source, external link speed, PON link status
 - Receive/transmit packet, byte, and unicast counters
+- LAN IP address and netmask, DHCP leases, IP passthrough address
+- LAN IPv6 address and subnet, and the **delegated IPv6 prefix** (empty when the gateway isn't delegating one to your router)
+- Wi-Fi 2.4/5 GHz status, per-port LAN connection status and speed, number of active/inactive clients
+- IP address (the address Home Assistant reaches the gateway on)
 - Manufacturer, model, hardware/software version, serial number, first use date
 
-**Binary sensor**
+**Binary sensors**
 - Connectivity (on when the gateway reports its connection as "Up")
+- DHCP server, packet filter, IP passthrough, NAT default server, Firewall Advanced
+
+**With the Device Access Code**
+- NAT sessions available/in use
+- Latest speed test: download, upload, and when it ran
+- **Run Speed Test** button (measured by the gateway itself, bypassing your own router)
+- **Restart** button (disabled by default - it takes your internet connection down for a few minutes)
 
 All of these are created automatically when you set up the integration - nothing extra to configure.
 
