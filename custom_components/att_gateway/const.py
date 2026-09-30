@@ -207,7 +207,7 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
         "dhcp_leases_allocated", "DHCP Leases Allocated", f"{_LAN_TABLE} tr:nth-child(7) td"
     ),
     GatewayField(
-        "ip_passthrough_address", "IP Passthrough Address", f"{_LAN_TABLE} tr:nth-child(13) td"
+        "ip_passthrough_address", "Bridge Mode Address", f"{_LAN_TABLE} tr:nth-child(13) td"
     ),
     GatewayField(
         "lan_ipv6_address", "LAN IPv6 Address", f"{_LAN_IPV6_TABLE} tr:nth-child(2) td"
@@ -244,7 +244,7 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
 _FIREWALL_TABLE = 'table[summary*="Packet Filter"]'
 FIREWALL_FIELDS: tuple[GatewayField, ...] = (
     GatewayField("packet_filter", "Packet Filter", f"{_FIREWALL_TABLE} tr:nth-child(1) td"),
-    GatewayField("ip_passthrough", "IP Passthrough", f"{_FIREWALL_TABLE} tr:nth-child(2) td"),
+    GatewayField("ip_passthrough", "Bridge Mode", f"{_FIREWALL_TABLE} tr:nth-child(2) td"),
     GatewayField(
         "nat_default_server", "NAT Default Server", f"{_FIREWALL_TABLE} tr:nth-child(3) td"
     ),

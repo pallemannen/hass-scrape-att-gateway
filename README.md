@@ -29,7 +29,7 @@ No YAML editing or manually edited config files needed - everything is set up th
 - Connection status, current time, system uptime, last reboot
 - External IP and IPv6 addresses, default gateways, primary/secondary DNS (IPv4 and IPv6), broadband source, external link speed, PON link status
 - Receive/transmit packet, byte, and unicast counters
-- LAN IP address and netmask, DHCP leases, IP passthrough address
+- LAN IP address and netmask, DHCP leases, bridge mode address
 - LAN IPv6 address and subnet, and the **delegated IPv6 prefix** (empty when the gateway isn't delegating one to your router)
 - Wi-Fi 2.4/5 GHz status, per-port LAN connection status and speed, number of active/inactive clients
 - IP address (the address Home Assistant reaches the gateway on)
@@ -37,7 +37,7 @@ No YAML editing or manually edited config files needed - everything is set up th
 
 **Binary sensors**
 - Connectivity (on when the gateway reports its connection as "Up")
-- DHCP server, packet filter, IP passthrough, NAT default server, Firewall Advanced
+- DHCP server, packet filter, bridge mode, NAT default server, Firewall Advanced
 
 **With the Device Access Code**
 - NAT sessions available/in use

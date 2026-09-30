@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- The On/Off binary sensors (DHCP server, IP passthrough, packet filter, NAT default server, Firewall Advanced) get their own state-dependent icons instead of the default check mark.
+- "IP Passthrough" and "IP Passthrough Address" are now called "Bridge Mode" and "Bridge Mode Address", matching the Xfinity Gateway integration. Entity IDs follow.
+- The On/Off binary sensors (DHCP server, bridge mode, packet filter, NAT default server, Firewall Advanced) get their own state-dependent icons instead of the default check mark.
 
 ## [1.1.0] - 2026-09-30
 
