@@ -36,11 +36,14 @@ from .const import (
     GAUGE_FIELD_KEYS,
     GatewayField,
     ICON_ACTIVE,
+    ICON_ETHERNET_OFF,
+    ICON_ETHERNET_ON,
     ICON_INACTIVE,
     ICON_WIFI_OFF,
     ICON_WIFI_ON,
     LAN_FIELDS,
     LAN_INTERFACES_TABLE,
+    LAN_PORT_STATUS_FIELD_KEYS,
     LAN_PORT_SPEED_FIELD_KEYS,
     LAST_REBOOT_ICON,
     LINK_SPEED_FIELD_KEYS,
@@ -201,6 +204,9 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         if self._field.key in WIFI_STATUS_FIELD_KEYS:
             value = self.native_value
             return ICON_WIFI_ON if value and value.lower() == "enabled" else ICON_WIFI_OFF
+        if self._field.key in LAN_PORT_STATUS_FIELD_KEYS:
+            value = self.native_value
+            return ICON_ETHERNET_ON if value and value.lower() == "up" else ICON_ETHERNET_OFF
         return self._static_icon
 
 

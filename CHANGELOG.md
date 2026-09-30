@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - "IP Passthrough" and "IP Passthrough Address" are now called "Bridge Mode" and "Bridge Mode Address", matching the Xfinity Gateway integration. Entity IDs follow.
 - The On/Off binary sensors (DHCP server, bridge mode, packet filter, NAT default server, Firewall Advanced) get their own state-dependent icons instead of the default check mark.
-- LAN port status and LAN netmask use `mdi:lan`, and Wi-Fi status switches between `mdi:wifi`/`mdi:wifi-off`, matching the Xfinity Gateway integration.
+- LAN port status switches between `mdi:ethernet`/`mdi:ethernet-off`, Wi-Fi status between `mdi:wifi`/`mdi:wifi-off`, and LAN netmask uses `mdi:lan`, matching the Xfinity Gateway integration.
 
 ### Fixed
 

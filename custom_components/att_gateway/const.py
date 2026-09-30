@@ -309,6 +309,9 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
 ICON_ACTIVE = "mdi:check-network-outline"
 ICON_INACTIVE = "mdi:close-network-outline"
 WIFI_STATUS_FIELD_KEYS = frozenset({"wifi_24ghz_status", "wifi_5ghz_status"})
+LAN_PORT_STATUS_FIELD_KEYS = frozenset(f"lan_{port}_connection_status" for port in range(1, 5))
+ICON_ETHERNET_ON = "mdi:ethernet"
+ICON_ETHERNET_OFF = "mdi:ethernet-off"
 ICON_WIFI_ON = "mdi:wifi"
 ICON_WIFI_OFF = "mdi:wifi-off"
 LAST_REBOOT_ICON = "mdi:clock-time-four-outline"
@@ -356,6 +359,5 @@ STATIC_ICONS: dict[str, str] = {
     "speed_test_download": "mdi:download-network-outline",
     "speed_test_upload": "mdi:upload-network-outline",
     "last_speed_test": "mdi:speedometer",
-    **{f"lan_{port}_connection_status": "mdi:lan" for port in range(1, 5)},
     **{f"lan_{port}_speed": "mdi:speedometer" for port in range(1, 5)},
 }
