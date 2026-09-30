@@ -297,6 +297,15 @@ GAUGE_FIELD_KEYS = frozenset(
 LINK_SPEED_FIELD_KEYS = frozenset({"external_link_speed"})
 LAN_PORT_SPEED_FIELD_KEYS = frozenset(f"lan_{port}_speed" for port in range(1, 5))
 
+# (on, off) icons for the On/Off binary sensors; same as Xfinity where it has one.
+ON_OFF_ICONS: dict[str, tuple[str, str]] = {
+    "dhcp_server": ("mdi:database-export-outline", "mdi:database-export-outline"),
+    "ip_passthrough": ("mdi:bridge", "mdi:bridge"),
+    "packet_filter": ("mdi:filter", "mdi:filter-off"),
+    "nat_default_server": ("mdi:server-network", "mdi:server-network-off"),
+    "firewall_advanced": ("mdi:shield-check", "mdi:shield-off"),
+}
+
 ICON_ACTIVE = "mdi:check-network-outline"
 ICON_INACTIVE = "mdi:close-network-outline"
 LAST_REBOOT_ICON = "mdi:clock-time-four-outline"

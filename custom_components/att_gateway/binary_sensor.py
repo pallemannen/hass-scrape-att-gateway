@@ -20,6 +20,7 @@ from .const import (
     GatewayField,
     ICON_ACTIVE,
     ICON_INACTIVE,
+    ON_OFF_ICONS,
     STATUS_FIELDS,
 )
 from .util import entity_object_id, extract_text
@@ -113,3 +114,9 @@ class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
         """Return true if the gateway shows the feature as on."""
         value = extract_text(self.coordinator, self._field.select)
         return value.lower().startswith("on") if value else None
+
+    @property
+    def icon(self) -> str | None:
+        """Return a state-dependent icon."""
+        on_icon, off_icon = ON_OFF_ICONS[self._field.key]
+        return on_icon if self.is_on else off_icon
