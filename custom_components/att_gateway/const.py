@@ -308,6 +308,9 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
 
 ICON_ACTIVE = "mdi:check-network-outline"
 ICON_INACTIVE = "mdi:close-network-outline"
+WIFI_STATUS_FIELD_KEYS = frozenset({"wifi_24ghz_status", "wifi_5ghz_status"})
+ICON_WIFI_ON = "mdi:wifi"
+ICON_WIFI_OFF = "mdi:wifi-off"
 LAST_REBOOT_ICON = "mdi:clock-time-four-outline"
 
 STATIC_ICONS: dict[str, str] = {
@@ -339,15 +342,13 @@ STATIC_ICONS: dict[str, str] = {
     "secondary_ipv6_dns": "mdi:dns-outline",
     "pon_link_status": "mdi:fiber-manual-record",
     "lan_ip_address": "mdi:ip-network-outline",
-    "lan_netmask": "mdi:ip-network-outline",
+    "lan_netmask": "mdi:lan",
     "dhcp_leases_available": "mdi:counter",
     "dhcp_leases_allocated": "mdi:counter",
     "ip_passthrough_address": "mdi:ip-network-outline",
     "lan_ipv6_address": "mdi:ip-network-outline",
     "lan_ipv6_subnet": "mdi:ip-network-outline",
     "delegated_ipv6_prefix": "mdi:ip-network-outline",
-    "wifi_24ghz_status": "mdi:wifi",
-    "wifi_5ghz_status": "mdi:wifi",
     "active_client_count": "mdi:devices",
     "inactive_client_count": "mdi:devices",
     "nat_sessions_available": "mdi:swap-horizontal",
@@ -355,6 +356,6 @@ STATIC_ICONS: dict[str, str] = {
     "speed_test_download": "mdi:download-network-outline",
     "speed_test_upload": "mdi:upload-network-outline",
     "last_speed_test": "mdi:speedometer",
-    **{f"lan_{port}_connection_status": "mdi:ethernet" for port in range(1, 5)},
+    **{f"lan_{port}_connection_status": "mdi:lan" for port in range(1, 5)},
     **{f"lan_{port}_speed": "mdi:speedometer" for port in range(1, 5)},
 }

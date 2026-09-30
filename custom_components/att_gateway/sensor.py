@@ -37,6 +37,8 @@ from .const import (
     GatewayField,
     ICON_ACTIVE,
     ICON_INACTIVE,
+    ICON_WIFI_OFF,
+    ICON_WIFI_ON,
     LAN_FIELDS,
     LAN_INTERFACES_TABLE,
     LAN_PORT_SPEED_FIELD_KEYS,
@@ -49,6 +51,7 @@ from .const import (
     STATUS_FIELDS,
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
+    WIFI_STATUS_FIELD_KEYS,
 )
 from .util import entity_object_id, extract_text as _extract_text
 
@@ -195,6 +198,9 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         if self._field.key == CONNECTION_STATUS_FIELD_KEY:
             value = self.native_value
             return ICON_ACTIVE if value and value.lower() == "up" else ICON_INACTIVE
+        if self._field.key in WIFI_STATUS_FIELD_KEYS:
+            value = self.native_value
+            return ICON_WIFI_ON if value and value.lower() == "enabled" else ICON_WIFI_OFF
         return self._static_icon
 
 
