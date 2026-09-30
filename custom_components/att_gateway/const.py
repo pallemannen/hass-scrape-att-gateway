@@ -16,12 +16,15 @@ SYSINFO_PATH = "sysinfo.ha"
 STATUS_PATH = "broadbandstatistics.ha"
 LAN_PATH = "lanstatistics.ha"
 FIREWALL_PATH = "firewall.ha"
+FIBER_PATH = "fiberstat.ha"
 
 # Pages behind the Device Access Code (see api.py).
 LOGIN_PATH = "login.ha"
 NAT_PATH = "nattable.ha"
 SPEED_PATH = "speed.ha"
 RESTART_PATH = "restart.ha"
+IPV6_PATH = "ip6lan.ha"
+PASSTHROUGH_PATH = "ippass.ha"
 
 # Seconds until a speed test result shows up.
 SPEED_TEST_DURATION = 60
@@ -40,6 +43,9 @@ class GatewayField:
     key: str
     name: str
     select: str
+    enabled: bool = True
+    # Read this attribute instead of the text (form fields on locked pages).
+    attr: str | None = None
 
 
 # sysinfo.ha: a single <table> on the page, so "table:nth-of-type(1)" is
@@ -187,10 +193,30 @@ STATUS_FIELDS: tuple[GatewayField, ...] = (
         "PON Link Status",
         'table[summary*="GPON"] tr:nth-child(1) td:nth-child(2)',
     ),
+    GatewayField(
+        "mtu", "MTU", 'table[summary*="WAN"] tr:nth-child(12) td:nth-child(2)', enabled=False
+    ),
+    GatewayField(
+        "ipv6_mtu",
+        "IPv6 MTU",
+        'table[summary*="IPv6 Table"] tr:nth-child(8) td:nth-child(2)',
+        enabled=False,
+    ),
 )
 
 # lanstatistics.ha
 _LAN_TABLE = 'table[summary*="critical LAN status"]'
+# (key, name, row) in the LAN Ethernet Statistics table.
+LAN_PORT_COUNTERS = (
+    ("transmit_packets", "Transmit Packets", 4),
+    ("transmit_bytes", "Transmit Bytes", 5),
+    ("transmit_dropped", "Transmit Dropped", 8),
+    ("transmit_errors", "Transmit Errors", 9),
+    ("receive_packets", "Receive Packets", 10),
+    ("receive_bytes", "Receive Bytes", 11),
+    ("receive_dropped", "Receive Dropped", 14),
+    ("receive_errors", "Receive Errors", 15),
+)
 _LAN_IPV6_TABLE = 'table[summary*="IPv6 LAN information"]'
 _LAN_PORTS_TABLE = 'table[summary*="LAN Ethernet Statistics"]'
 # Unclosed header <tr> on this table, so select cells by class.
@@ -238,6 +264,16 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
         )
         for port in range(1, 5)
     ),
+    *(
+        GatewayField(
+            f"lan_{port}_{key}",
+            f"LAN {port} {name}",
+            f"{_LAN_PORTS_TABLE} tr:nth-child({row}) td:nth-child({port + 1})",
+            enabled=port == 1,
+        )
+        for port in range(1, 5)
+        for key, name, row in LAN_PORT_COUNTERS
+    ),
 )
 
 # "On"/"Off" status rows, exposed as binary sensors.
@@ -253,6 +289,48 @@ FIREWALL_FIELDS: tuple[GatewayField, ...] = (
     ),
 )
 DHCP_SERVER_FIELD = GatewayField("dhcp_server", "DHCP Server", f"{_LAN_TABLE} tr:nth-child(3) td")
+
+# fiberstat.ha
+_FIBER_TABLE = 'table[summary*="Table of Fiber stats"]'
+FIBER_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("fiber_status", "Fiber Status", f"{_FIBER_TABLE} tr:nth-child(1) td"),
+    GatewayField("fiber_link_state", "Fiber Link State", f"{_FIBER_TABLE} tr:nth-child(4) td"),
+)
+# Alarm/warning counters, one table each; cells read "0 (Threshold -50)".
+FIBER_ALARM_TABLES = {
+    "temperature": 'table[summary*="Temperature table"]',
+    "voltage": 'table[summary*="Test results for Vcc"]',
+    "tx_bias": 'table[summary*="Tx Bias table"]',
+    "tx_power": 'table[summary*="Tx Power table"]',
+    "rx_power": 'table[summary*="Rx Power table"]',
+}
+
+# ip6lan.ha (needs the Device Access Code): form values.
+IPV6_SETTING_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("ipv6", "IPv6", 'select[name="ipv6lan"] option[selected]'),
+    GatewayField("dhcpv6", "DHCPv6", 'select[name="dhcpv6"] option[selected]'),
+    GatewayField(
+        "dhcpv6_prefix_delegation",
+        "DHCPv6 Prefix Delegation",
+        'select[name="dhcpv6pd"] option[selected]',
+    ),
+)
+RA_MTU_FIELD = GatewayField(
+    "router_advertisement_mtu", "Router Advertisement MTU", 'input[name="MTU6"]', False, "value"
+)
+
+# ippass.ha (needs the Device Access Code): form values.
+PASSTHROUGH_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("allocation_mode", "Allocation Mode", 'select[name="allocmode"] option[selected]'),
+    GatewayField("passthrough_mode", "Passthrough Mode", 'select[name="passmode"] option[selected]'),
+    GatewayField(
+        "passthrough_fixed_mac_address",
+        "Passthrough Fixed MAC Address",
+        'input[name="passmac"]',
+        attr="value",
+    ),
+)
+PASSTHROUGH_LEASE_INPUTS = {"dhcpday": 86400, "dhcphour": 3600, "dhcpmin": 60, "dhcpsec": 1}
 
 # nattable.ha (needs the Device Access Code).
 _NAT_TABLE = 'table[summary*="summary of session information"]'
@@ -280,9 +358,13 @@ COUNTER_FIELD_KEYS = frozenset(
         "transmit_bytes",
         "receive_unicast",
         "transmit_unicast",
+        *(f"lan_{port}_{key}" for port in range(1, 5) for key, _, _ in LAN_PORT_COUNTERS),
     }
 )
-BYTE_FIELD_KEYS = frozenset({"receive_bytes", "transmit_bytes"})
+BYTE_FIELD_KEYS = frozenset(
+    {"receive_bytes", "transmit_bytes"}
+    | {f"lan_{port}_{d}_bytes" for port in range(1, 5) for d in ("receive", "transmit")}
+)
 
 # Plain integer gauges (not counters).
 GAUGE_FIELD_KEYS = frozenset(
@@ -291,6 +373,9 @@ GAUGE_FIELD_KEYS = frozenset(
         "dhcp_leases_allocated",
         "nat_sessions_available",
         "nat_sessions_in_use",
+        "mtu",
+        "ipv6_mtu",
+        "router_advertisement_mtu",
     }
 )
 # Link speeds: the WAN one is reported in Mbps, the LAN ports in bit/s.
@@ -304,6 +389,9 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
     "packet_filter": ("mdi:filter", "mdi:filter-off"),
     "nat_default_server": ("mdi:server-network", "mdi:server-network-off"),
     "firewall_advanced": ("mdi:shield-check", "mdi:shield-off"),
+    "ipv6": ("mdi:ip-network-outline", "mdi:ip-network-outline"),
+    "dhcpv6": ("mdi:database-export-outline", "mdi:database-off-outline"),
+    "dhcpv6_prefix_delegation": ("mdi:database-export-outline", "mdi:database-off-outline"),
 }
 
 ICON_ACTIVE = "mdi:check-network-outline"
@@ -344,6 +432,17 @@ STATIC_ICONS: dict[str, str] = {
     "primary_ipv6_dns": "mdi:dns-outline",
     "secondary_ipv6_dns": "mdi:dns-outline",
     "pon_link_status": "mdi:wan",
+    "mtu": "mdi:arrow-expand-horizontal",
+    "ipv6_mtu": "mdi:arrow-expand-horizontal",
+    "router_advertisement_mtu": "mdi:arrow-expand-horizontal",
+    "fiber_status": "mdi:wan",
+    "fiber_link_state": "mdi:wan",
+    "allocation_mode": "mdi:bridge",
+    "passthrough_mode": "mdi:bridge",
+    "passthrough_fixed_mac_address": "mdi:barcode",
+    "passthrough_dhcp_lease": "mdi:timer-outline",
+    **{f"lan_{port}_{d}_{k}": "mdi:download-network-outline" if d == "receive" else "mdi:upload-network-outline"
+       for port in range(1, 5) for d in ("receive", "transmit") for k in ("packets", "bytes", "dropped", "errors")},
     "lan_ip_address": "mdi:ip-network-outline",
     "lan_netmask": "mdi:slash-forward-box",
     "dhcp_leases_available": "mdi:counter",

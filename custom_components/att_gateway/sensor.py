@@ -33,6 +33,7 @@ from .const import (
     CURRENT_TIME_FIELD_KEY,
     CURRENT_TIME_FORMAT,
     DEFAULT_SCAN_INTERVAL,
+    FIBER_FIELDS,
     GAUGE_FIELD_KEYS,
     GatewayField,
     ICON_ACTIVE,
@@ -48,6 +49,9 @@ from .const import (
     LAST_REBOOT_ICON,
     LINK_SPEED_FIELD_KEYS,
     NAT_FIELDS,
+    PASSTHROUGH_FIELDS,
+    PASSTHROUGH_LEASE_INPUTS,
+    RA_MTU_FIELD,
     SPEED_TABLE,
     SPEED_TIME_FORMAT,
     STATIC_ICONS,
@@ -108,7 +112,10 @@ async def async_setup_entry(
     for coordinator, fields in (
         (coordinator_status, STATUS_FIELDS),
         (coordinator_lan, LAN_FIELDS),
+        (entry.runtime_data["fiber"], FIBER_FIELDS),
         (entry.runtime_data.get("nat"), NAT_FIELDS),
+        (entry.runtime_data.get("ipv6"), (RA_MTU_FIELD,)),
+        (entry.runtime_data.get("passthrough"), PASSTHROUGH_FIELDS),
     ):
         if coordinator is None:
             continue
@@ -144,6 +151,9 @@ async def async_setup_entry(
             )
         )
         entities.append(LastSpeedTestSensor(hass, coordinator_speed, device_info))
+
+    if (coordinator_passthrough := entry.runtime_data.get("passthrough")) is not None:
+        entities.append(PassthroughLeaseSensor(hass, coordinator_passthrough, device_info))
 
     async_add_entities(entities)
 
@@ -183,6 +193,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._field = field
         self._attr_name = field.name
+        self._attr_entity_registry_enabled_default = field.enabled
         self._attr_unique_id = f"att_gateway_{field.key}"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
@@ -193,7 +204,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the sensor's current value."""
-        return _extract_text(self.coordinator, self._field.select)
+        return _extract_text(self.coordinator, self._field.select, self._field.attr)
 
     @property
     def icon(self) -> str | None:
@@ -341,7 +352,7 @@ class GaugeFieldSensor(GatewayFieldSensor):
     @property
     def native_value(self) -> int | None:
         """Return the value, parsed as an int."""
-        return _parse_int(_extract_text(self.coordinator, self._field.select))
+        return _parse_int(_extract_text(self.coordinator, self._field.select, self._field.attr))
 
 
 class LinkSpeedSensor(GaugeFieldSensor):
@@ -487,3 +498,30 @@ class IpAddressSensor(SensorEntity):
             )
         except OSError:
             self._attr_native_value = None
+
+
+class PassthroughLeaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+    """The passthrough DHCP lease time (days/hours/minutes/seconds form fields)."""
+
+    _attr_has_entity_name = True
+    _attr_name = "Passthrough DHCP Lease"
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+
+    def __init__(
+        self, hass: HomeAssistant, coordinator: DataUpdateCoordinator, device_info: DeviceInfo
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        _init_entity(self, hass, "passthrough_dhcp_lease", device_info)
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the lease time in seconds."""
+        total = 0
+        for name, seconds in PASSTHROUGH_LEASE_INPUTS.items():
+            value = _parse_int(_extract_text(self.coordinator, f'input[name="{name}"]', "value"))
+            if value is None:
+                return None
+            total += value * seconds
+        return total

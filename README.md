@@ -31,16 +31,20 @@ No YAML editing or manually edited config files needed - everything is set up th
 - Receive/transmit packet, byte, and unicast counters
 - LAN IP address and netmask, DHCP leases, bridge mode address
 - LAN IPv6 address and subnet, and the **delegated IPv6 prefix** (empty when the gateway isn't delegating one to your router)
-- Wi-Fi 2.4/5 GHz status, per-port LAN connection status and speed, number of active/inactive clients
+- Wi-Fi 2.4/5 GHz status, per-port LAN connection status, speed and traffic counters, number of active/inactive clients
+- Fiber status and link state, MTU
 - IP address (the address Home Assistant reaches the gateway on)
 - Manufacturer, model, hardware/software version, serial number, first use date
 
 **Binary sensors**
 - Connectivity (on when the gateway reports its connection as "Up")
 - DHCP server, packet filter, bridge mode, NAT default server, Firewall Advanced
+- Fiber alarm (on when the fiber module reports an alarm or warning)
 
 **With the Device Access Code**
 - NAT sessions available/in use
+- IPv6, DHCPv6 and prefix delegation settings, router advertisement MTU
+- Passthrough settings: allocation mode, passthrough mode, fixed MAC address, DHCP lease
 - Latest speed test: download, upload, and when it ran
 - **Run Speed Test** button (measured by the gateway itself, bypassing your own router)
 - **Restart** button (disabled by default - it takes your internet connection down for a few minutes)

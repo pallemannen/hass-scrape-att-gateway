@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Per-port LAN traffic counters: transmit/receive packets, bytes, dropped and errors (ports 2-4 disabled by default).
+- Fiber status, fiber link state, and a "Fiber Alarm" problem sensor that is on when any of the fiber module's alarm/warning counters is non-zero.
+- MTU and IPv6 MTU (disabled by default).
+- With the access code: IPv6, DHCPv6 and DHCPv6 prefix delegation settings (binary sensors), router advertisement MTU (disabled by default), and the passthrough settings: allocation mode, passthrough mode, fixed MAC address and DHCP lease.
+
 ### Changed
 
 - "IP Passthrough" and "IP Passthrough Address" are now called "Bridge Mode" and "Bridge Mode Address", matching the Xfinity Gateway integration. Entity IDs follow.
