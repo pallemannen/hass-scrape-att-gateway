@@ -350,11 +350,7 @@ class LanPortSpeedSensor(LinkSpeedSensor):
 
 
 class ClientCountSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
-    """Active or inactive client count, summed over the LAN Interfaces table.
-
-    That table has one row per interface (Ethernet, 5G Ethernet, Wi-Fi 2.4/5
-    GHz, Mesh Clients) with "Active Devices"/"Inactive Devices" columns.
-    """
+    """Active or inactive client count, summed over the LAN Interfaces table."""
 
     _attr_has_entity_name = True
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -457,11 +453,7 @@ def _speed_rows(coordinator: DataUpdateCoordinator) -> list[list[str]]:
 
 
 class IpAddressSensor(SensorEntity):
-    """The address Home Assistant reaches the gateway on (the configured host).
-
-    Normally the same as "LAN IP Address"; if the configured host is a name,
-    it is resolved, so a DNS change shows up here.
-    """
+    """The address Home Assistant reaches the gateway on (configured host, resolved)."""
 
     _attr_has_entity_name = True
     _attr_name = "IP Address"

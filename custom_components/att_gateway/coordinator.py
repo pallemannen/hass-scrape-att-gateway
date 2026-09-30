@@ -1,9 +1,4 @@
-"""Coordinator for the gateway's pages behind the Device Access Code.
-
-Holds a parsed BeautifulSoup document in `.data`, like Core's
-ScrapeCoordinator, so the same entity classes and `extract_text` work for
-both locked and open pages.
-"""
+"""Coordinator for the pages behind the Device Access Code."""
 from __future__ import annotations
 
 from datetime import timedelta

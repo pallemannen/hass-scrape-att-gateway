@@ -1,12 +1,4 @@
-"""Client for the gateway's pages that require the Device Access Code.
-
-The login form doesn't send the code itself: its JavaScript posts
-`hashpassword = md5(access_code + nonce)`, where the nonce is a hidden field
-that changes on every page load. A plain-text code in `password` is rejected
-(verified against a real BGW320-500). Neither Core's `scrape`/`rest` nor
-multiscrape can compute that hash from a freshly scraped nonce, hence this
-small client with its own cookie session.
-"""
+"""Client for the pages behind the Device Access Code (login posts md5(code + nonce))."""
 from __future__ import annotations
 
 import asyncio
@@ -45,8 +37,7 @@ class GatewayClient:
 
     def __init__(self, hass: HomeAssistant, host: str, access_code: str) -> None:
         """Initialize the client."""
-        # unsafe=True: the gateway is addressed by IP, and aiohttp's default
-        # cookie jar ignores cookies from IP-address hosts.
+        # unsafe=True: aiohttp ignores cookies from IP-address hosts otherwise.
         self._session = async_create_clientsession(
             hass, cookie_jar=aiohttp.CookieJar(unsafe=True)
         )
@@ -65,8 +56,7 @@ class GatewayClient:
             raise GatewayConnectionError(f"{method} {path}: {err}") from err
 
     async def _login(self) -> None:
-        # The first request only sets the session cookie; the login form (and
-        # its nonce) is served once the cookie is present.
+        # The first request only sets the cookie; the form comes after.
         body = await self._request("GET", LOGIN_PATH)
         nonce = _nonce(body) or _nonce(await self._request("GET", LOGIN_PATH))
         if nonce is None:

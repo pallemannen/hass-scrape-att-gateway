@@ -23,7 +23,7 @@ NAT_PATH = "nattable.ha"
 SPEED_PATH = "speed.ha"
 RESTART_PATH = "restart.ha"
 
-# How long a speed test run takes before its result shows up on speed.ha.
+# Seconds until a speed test result shows up.
 SPEED_TEST_DURATION = 60
 
 # The gateway reports both of these as plain ISO-ish strings with no
@@ -189,13 +189,11 @@ STATUS_FIELDS: tuple[GatewayField, ...] = (
     ),
 )
 
-# lanstatistics.ha: tables identified by their `summary` attribute, the same
-# way as STATUS_FIELDS. Row positions verified against a real BGW320-500.
+# lanstatistics.ha
 _LAN_TABLE = 'table[summary*="critical LAN status"]'
 _LAN_IPV6_TABLE = 'table[summary*="IPv6 LAN information"]'
 _LAN_PORTS_TABLE = 'table[summary*="LAN Ethernet Statistics"]'
-# The Wi-Fi table's header <tr> is never closed, so the parser nests the data
-# row inside it and tr:nth-child() doesn't work; select the cells by class.
+# Unclosed header <tr> on this table, so select cells by class.
 _WIFI_TABLE = 'table[summary*="Wi-Fi status"]'
 LAN_INTERFACES_TABLE = 'table[summary*="LAN Interfaces"]'
 
@@ -265,10 +263,8 @@ NAT_FIELDS: tuple[GatewayField, ...] = (
     GatewayField("nat_sessions_in_use", "NAT Sessions In Use", f"{_NAT_TABLE} tr:nth-child(2) td"),
 )
 
-# speed.ha (needs the Device Access Code): result history, newest first, one
-# row per direction. Columns: completion time, direction, throughput (Mbps),
-# overhead, average latency, status. The latency column isn't exposed - it
-# holds nonsense values (e.g. 2610846038) on a real BGW320-500.
+# speed.ha (needs the Device Access Code): newest first, one row per direction.
+# The latency column isn't used; its values are unreliable.
 SPEED_TABLE = 'table[summary*="Speed Test Result History"]'
 SPEED_TIME_FORMAT = "%m/%d/%Y %H:%M:%S"
 

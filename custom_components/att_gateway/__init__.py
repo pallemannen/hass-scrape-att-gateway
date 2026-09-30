@@ -12,10 +12,8 @@ reimplementing them:
 
 Most status pages are served without a login, so each gets its own
 independent ScrapeCoordinator, built the same way `scrape`'s own
-`async_setup_entry` builds its own coordinator. A few pages (NAT table,
-speed test, restart) need the gateway's Device Access Code; when one is
-configured, those go through `api.GatewayClient` and `LockedPageCoordinator`
-instead (see api.py for why `scrape` can't log in here).
+`async_setup_entry` builds its own coordinator. Pages behind the Device
+Access Code go through `api.GatewayClient` instead.
 """
 from __future__ import annotations
 
@@ -82,8 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         runtime_data["client"] = client
         for key, path in (("nat", NAT_PATH), ("speed", SPEED_PATH)):
             coordinator = LockedPageCoordinator(hass, entry, client, path)
-            # Not async_config_entry_first_refresh: a rejected code or a
-            # locked-page hiccup shouldn't take down the open-page entities.
+            # A rejected code shouldn't take down the open-page entities.
             await coordinator.async_refresh()
             runtime_data[key] = coordinator
 
@@ -97,14 +94,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 def _async_migrate_entity_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Rename entity IDs from the old key-based form to the name-based one.
-
-    Up to 1.0.0, entity IDs were "<domain>.<unique_id>" (e.g.
-    sensor.att_gateway_model_number); they now follow the entity name, like
-    the Xfinity Gateway integration's. Only entities still carrying that old
-    auto-generated ID are touched, so IDs renamed by hand are left alone.
-    Runs after the platforms are set up, so original_name is current.
-    """
+    """Rename old key-based entity IDs to name-based ones, unless renamed by hand."""
     registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
         domain = entity.entity_id.split(".", 1)[0]

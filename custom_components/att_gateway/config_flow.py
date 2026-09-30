@@ -1,8 +1,7 @@
 """Config flow for the AT&T Gateway integration.
 
-The only credential is the optional Device Access Code (printed on the
-gateway), used for the few locked pages; the main status pages aren't behind
-a login. Validation fetches the System Information page and checks for
+The only credential is the optional Device Access Code, used for the few
+locked pages. Validation fetches the System Information page and checks for
 a "Manufacturer" row, using the same RESOURCE_SCHEMA/create_rest_data_from_config
 building blocks the rest of this integration reuses from
 homeassistant.components.rest - so a wrong/unreachable host, or a host that
