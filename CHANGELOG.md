@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Firewall Advanced uses `mdi:wall-fire` (on) and `mdi:wall` (off).
 
+### Fixed
+
+- Disabled entities had no icon in the entity lists; icons now also come from `icons.json`.
+
 ## [1.2.0] - 2026-09-30
 
 ### Added

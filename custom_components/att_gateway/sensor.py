@@ -171,6 +171,7 @@ async def async_setup_entry(
 def _init_entity(entity, hass: HomeAssistant, key: str, device_info: DeviceInfo) -> None:
     """Shared unique_id/entity_id/device/icon setup for the derived sensors."""
     entity._attr_unique_id = f"att_gateway_{key}"
+    entity._attr_translation_key = key
     entity._attr_device_info = device_info
     entity._attr_icon = STATIC_ICONS.get(key)
     entity.entity_id = async_generate_entity_id(
@@ -209,6 +210,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         self._attr_name = field.name
         self._attr_entity_registry_enabled_default = field.enabled
         self._attr_unique_id = f"att_gateway_{field.key}"
+        self._attr_translation_key = field.key
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
@@ -331,6 +333,7 @@ class LastRebootSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._attr_icon = LAST_REBOOT_ICON
         self._attr_unique_id = "att_gateway_last_reboot"
+        self._attr_translation_key = "last_reboot"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass

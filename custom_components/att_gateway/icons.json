@@ -1,0 +1,439 @@
+{
+  "entity": {
+    "sensor": {
+      "manufacturer": {
+        "default": "mdi:factory"
+      },
+      "model_number": {
+        "default": "mdi:tag-outline"
+      },
+      "serial_number": {
+        "default": "mdi:numeric"
+      },
+      "software_version": {
+        "default": "mdi:source-branch"
+      },
+      "mac_address": {
+        "default": "mdi:barcode"
+      },
+      "first_use_date": {
+        "default": "mdi:calendar-clock-outline"
+      },
+      "system_uptime": {
+        "default": "mdi:clock-time-four-outline"
+      },
+      "current_time": {
+        "default": "mdi:clock-time-four-outline"
+      },
+      "hardware_version": {
+        "default": "mdi:chip"
+      },
+      "connection_status": {
+        "default": "mdi:check-network-outline",
+        "state": {
+          "Up": "mdi:check-network-outline",
+          "Down": "mdi:close-network-outline"
+        }
+      },
+      "external_ip_address": {
+        "default": "mdi:ip-network-outline"
+      },
+      "external_default_gateway": {
+        "default": "mdi:play-network-outline"
+      },
+      "primary_dns": {
+        "default": "mdi:dns-outline"
+      },
+      "secondary_dns": {
+        "default": "mdi:dns-outline"
+      },
+      "external_ipv6_address": {
+        "default": "mdi:ip-network-outline"
+      },
+      "receive_packets": {
+        "default": "mdi:download-network-outline"
+      },
+      "transmit_packets": {
+        "default": "mdi:upload-network-outline"
+      },
+      "receive_bytes": {
+        "default": "mdi:download-network-outline"
+      },
+      "transmit_bytes": {
+        "default": "mdi:upload-network-outline"
+      },
+      "receive_unicast": {
+        "default": "mdi:download-network-outline"
+      },
+      "transmit_unicast": {
+        "default": "mdi:upload-network-outline"
+      },
+      "broadband_source": {
+        "default": "mdi:transit-connection-variant"
+      },
+      "external_link_speed": {
+        "default": "mdi:speedometer"
+      },
+      "external_ipv6_default_gateway": {
+        "default": "mdi:play-network-outline"
+      },
+      "primary_ipv6_dns": {
+        "default": "mdi:dns-outline"
+      },
+      "secondary_ipv6_dns": {
+        "default": "mdi:dns-outline"
+      },
+      "pon_link_status": {
+        "default": "mdi:wan"
+      },
+      "mtu": {
+        "default": "mdi:arrow-expand-horizontal"
+      },
+      "ipv6_mtu": {
+        "default": "mdi:arrow-expand-horizontal"
+      },
+      "lan_ip_address": {
+        "default": "mdi:ip-network-outline"
+      },
+      "lan_netmask": {
+        "default": "mdi:slash-forward-box"
+      },
+      "dhcp_leases_available": {
+        "default": "mdi:counter"
+      },
+      "dhcp_leases_allocated": {
+        "default": "mdi:counter"
+      },
+      "ip_passthrough_address": {
+        "default": "mdi:ip-network-outline"
+      },
+      "lan_ipv6_address": {
+        "default": "mdi:ip-network-outline"
+      },
+      "lan_ipv6_subnet": {
+        "default": "mdi:ip-network-outline"
+      },
+      "delegated_ipv6_prefix": {
+        "default": "mdi:ip-network-outline"
+      },
+      "wifi_24ghz_status": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "Enabled": "mdi:wifi",
+          "Disabled": "mdi:wifi-off"
+        }
+      },
+      "wifi_5ghz_status": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "Enabled": "mdi:wifi",
+          "Disabled": "mdi:wifi-off"
+        }
+      },
+      "lan_1_connection_status": {
+        "default": "mdi:ethernet",
+        "state": {
+          "up": "mdi:ethernet",
+          "down": "mdi:ethernet-off"
+        }
+      },
+      "lan_2_connection_status": {
+        "default": "mdi:ethernet",
+        "state": {
+          "up": "mdi:ethernet",
+          "down": "mdi:ethernet-off"
+        }
+      },
+      "lan_3_connection_status": {
+        "default": "mdi:ethernet",
+        "state": {
+          "up": "mdi:ethernet",
+          "down": "mdi:ethernet-off"
+        }
+      },
+      "lan_4_connection_status": {
+        "default": "mdi:ethernet",
+        "state": {
+          "up": "mdi:ethernet",
+          "down": "mdi:ethernet-off"
+        }
+      },
+      "lan_1_speed": {
+        "default": "mdi:speedometer"
+      },
+      "lan_2_speed": {
+        "default": "mdi:speedometer"
+      },
+      "lan_3_speed": {
+        "default": "mdi:speedometer"
+      },
+      "lan_4_speed": {
+        "default": "mdi:speedometer"
+      },
+      "lan_1_transmit_packets": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_1_transmit_bytes": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_1_transmit_dropped": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_1_transmit_errors": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_1_receive_packets": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_1_receive_bytes": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_1_receive_dropped": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_1_receive_errors": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_2_transmit_packets": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_2_transmit_bytes": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_2_transmit_dropped": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_2_transmit_errors": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_2_receive_packets": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_2_receive_bytes": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_2_receive_dropped": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_2_receive_errors": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_3_transmit_packets": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_3_transmit_bytes": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_3_transmit_dropped": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_3_transmit_errors": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_3_receive_packets": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_3_receive_bytes": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_3_receive_dropped": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_3_receive_errors": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_4_transmit_packets": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_4_transmit_bytes": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_4_transmit_dropped": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_4_transmit_errors": {
+        "default": "mdi:upload-network-outline"
+      },
+      "lan_4_receive_packets": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_4_receive_bytes": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_4_receive_dropped": {
+        "default": "mdi:download-network-outline"
+      },
+      "lan_4_receive_errors": {
+        "default": "mdi:download-network-outline"
+      },
+      "nat_sessions_available": {
+        "default": "mdi:swap-horizontal"
+      },
+      "nat_sessions_in_use": {
+        "default": "mdi:swap-horizontal"
+      },
+      "fiber_status": {
+        "default": "mdi:wan"
+      },
+      "fiber_link_state": {
+        "default": "mdi:wan"
+      },
+      "allocation_mode": {
+        "default": "mdi:bridge"
+      },
+      "passthrough_mode": {
+        "default": "mdi:bridge"
+      },
+      "passthrough_fixed_mac_address": {
+        "default": "mdi:barcode"
+      },
+      "wifi_24ghz_ssid": {
+        "default": "mdi:access-point-network"
+      },
+      "wifi_5ghz_ssid": {
+        "default": "mdi:access-point-network"
+      },
+      "guest_wifi_ssid": {
+        "default": "mdi:access-point-network"
+      },
+      "router_advertisement_mtu": {
+        "default": "mdi:arrow-expand-horizontal"
+      },
+      "last_reboot": {
+        "default": "mdi:clock-time-four-outline"
+      },
+      "ip_address": {
+        "default": "mdi:ip-network-outline"
+      },
+      "active_client_count": {
+        "default": "mdi:devices"
+      },
+      "inactive_client_count": {
+        "default": "mdi:devices"
+      },
+      "speed_test_download": {
+        "default": "mdi:download-network-outline"
+      },
+      "speed_test_upload": {
+        "default": "mdi:upload-network-outline"
+      },
+      "last_speed_test": {
+        "default": "mdi:speedometer"
+      },
+      "passthrough_dhcp_lease": {
+        "default": "mdi:timer-outline"
+      },
+      "packet_filter_rules": {
+        "default": "mdi:filter"
+      },
+      "mac_filter_entries": {
+        "default": "mdi:playlist-remove"
+      },
+      "hosted_applications": {
+        "default": "mdi:arrow-decision"
+      },
+      "custom_services": {
+        "default": "mdi:arrow-decision"
+      }
+    },
+    "binary_sensor": {
+      "connectivity": {
+        "default": "mdi:close-network-outline",
+        "state": {
+          "on": "mdi:check-network-outline",
+          "off": "mdi:close-network-outline"
+        }
+      },
+      "fiber_alarm": {
+        "default": "mdi:wan"
+      },
+      "packet_filter": {
+        "default": "mdi:filter-off",
+        "state": {
+          "on": "mdi:filter",
+          "off": "mdi:filter-off"
+        }
+      },
+      "ip_passthrough": {
+        "default": "mdi:router-network-wireless",
+        "state": {
+          "on": "mdi:bridge",
+          "off": "mdi:router-network-wireless"
+        }
+      },
+      "nat_default_server": {
+        "default": "mdi:server-network-off",
+        "state": {
+          "on": "mdi:server-network",
+          "off": "mdi:server-network-off"
+        }
+      },
+      "firewall_advanced": {
+        "default": "mdi:wall",
+        "state": {
+          "on": "mdi:wall-fire",
+          "off": "mdi:wall"
+        }
+      },
+      "dhcp_server": {
+        "default": "mdi:database-off-outline",
+        "state": {
+          "on": "mdi:database-export-outline",
+          "off": "mdi:database-off-outline"
+        }
+      },
+      "ipv6": {
+        "default": "mdi:ip-network-outline",
+        "state": {
+          "on": "mdi:ip-network-outline",
+          "off": "mdi:ip-network-outline"
+        }
+      },
+      "dhcpv6": {
+        "default": "mdi:database-off-outline",
+        "state": {
+          "on": "mdi:database-export-outline",
+          "off": "mdi:database-off-outline"
+        }
+      },
+      "dhcpv6_prefix_delegation": {
+        "default": "mdi:database-off-outline",
+        "state": {
+          "on": "mdi:database-export-outline",
+          "off": "mdi:database-off-outline"
+        }
+      }
+    },
+    "switch": {
+      "wifi_24ghz": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "on": "mdi:wifi",
+          "off": "mdi:wifi-off"
+        }
+      },
+      "wifi_5ghz": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "on": "mdi:wifi",
+          "off": "mdi:wifi-off"
+        }
+      },
+      "guest_wifi": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "on": "mdi:wifi",
+          "off": "mdi:wifi-off"
+        }
+      }
+    },
+    "button": {
+      "run_speed_test": {
+        "default": "mdi:speedometer"
+      },
+      "restart": {
+        "default": "mdi:restart"
+      }
+    }
+  }
+}

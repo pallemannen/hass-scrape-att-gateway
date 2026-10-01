@@ -77,6 +77,7 @@ class GatewayConnectivitySensor(CoordinatorEntity[ScrapeCoordinator], BinarySens
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = "att_gateway_connectivity"
+        self._attr_translation_key = "connectivity"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
@@ -115,6 +116,7 @@ class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
         self._attr_name = field.name
         self._attr_entity_registry_enabled_default = field.enabled
         self._attr_unique_id = f"att_gateway_{field.key}"
+        self._attr_translation_key = field.key
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
@@ -147,6 +149,7 @@ class FiberAlarmSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._attr_unique_id = "att_gateway_fiber_alarm"
+        self._attr_translation_key = "fiber_alarm"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
