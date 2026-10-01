@@ -419,7 +419,7 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
     "ip_passthrough": ("mdi:bridge", "mdi:router-network-wireless"),
     "packet_filter": ("mdi:filter", "mdi:filter-off"),
     "nat_default_server": ("mdi:server-network", "mdi:server-network-off"),
-    "firewall_advanced": ("mdi:shield-check", "mdi:shield-off"),
+    "firewall_advanced": ("mdi:wall-fire", "mdi:wall"),
     "ipv6": ("mdi:ip-network-outline", "mdi:ip-network-outline"),
     "dhcpv6": ("mdi:database-export-outline", "mdi:database-off-outline"),
     "dhcpv6_prefix_delegation": ("mdi:database-export-outline", "mdi:database-off-outline"),
