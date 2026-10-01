@@ -34,7 +34,6 @@ from .const import (
     CURRENT_TIME_FIELD_KEY,
     CURRENT_TIME_FORMAT,
     DEFAULT_SCAN_INTERVAL,
-    ENUM_STATUS_FIELDS,
     FIBER_FIELDS,
     GAUGE_FIELD_KEYS,
     GatewayField,
@@ -55,7 +54,6 @@ from .const import (
     STATUS_FIELDS,
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
-    WIFI_STATUS_FIELD_KEYS,
     WIFI_SSID_FIELDS,
 )
 from .util import entity_object_id, extract_text as _extract_text
@@ -120,11 +118,8 @@ async def async_setup_entry(
         if coordinator is None:
             continue
         for field in fields:
-            if field.key in _SKIPPED_FIELD_KEYS or (
-                field.key in WIFI_STATUS_FIELD_KEYS and entry.runtime_data["client"]
-            ):
-                # Connection Status: same as the Connectivity binary sensor.
-                # Wi-Fi status: same as the Wi-Fi switches, when those exist.
+            if field.key in _SKIPPED_FIELD_KEYS:
+                # Same as the Connectivity binary sensor.
                 continue
             if field.key in COUNTER_FIELD_KEYS:
                 cls = CounterFieldSensor
@@ -134,8 +129,6 @@ async def async_setup_entry(
                 cls = LinkSpeedSensor
             elif field.key in LAN_PORT_SPEED_FIELD_KEYS:
                 cls = LanPortSpeedSensor
-            elif field.key in ENUM_STATUS_FIELDS:
-                cls = StatusSensor
             else:
                 cls = GatewayFieldSensor
             entities.append(cls(hass, coordinator, field, device_info))
@@ -625,37 +618,3 @@ class PacketFilterRulesSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEn
         """Return the rules' match conditions."""
         rules = self._rules()
         return {"rules": rules} if rules else None
-
-
-class StatusSensor(GatewayFieldSensor):
-    """A link or Wi-Fi status as an enum; icons per state come from icons.json."""
-
-    _attr_device_class = SensorDeviceClass.ENUM
-
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        coordinator: ScrapeCoordinator,
-        field: GatewayField,
-        device_info: DeviceInfo,
-    ) -> None:
-        """Initialize the sensor."""
-        super().__init__(hass, coordinator, field, device_info)
-        self._states = ENUM_STATUS_FIELDS[field.key]
-        self._attr_options = sorted(set(self._states.values()))
-
-    @property
-    def native_value(self) -> str | None:
-        """Return the shared state key for the gateway's value."""
-        raw = _extract_text(self.coordinator, self._field.select)
-        if not raw:
-            return None
-        state = self._states.get(raw.lower())
-        if state is None:
-            _LOGGER.debug("Unexpected %s value %r", self._field.name, raw)
-        return state
-
-    @property
-    def icon(self) -> None:
-        """Leave icons to icons.json."""
-        return None

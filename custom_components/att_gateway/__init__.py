@@ -111,12 +111,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 def _async_remove_retired_entities(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Remove registry entries for entities this integration no longer creates."""
-    retired = {"att_gateway_connection_status"}
-    if entry.runtime_data["client"]:
-        retired |= {"att_gateway_wifi_24ghz_status", "att_gateway_wifi_5ghz_status"}
+    retired = {
+        "att_gateway_connection_status",
+        "att_gateway_wifi_24ghz_status",
+        "att_gateway_wifi_5ghz_status",
+        *(f"att_gateway_lan_{port}_connection_status" for port in range(1, 5)),
+    }
     registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
-        if entity.unique_id in retired:
+        if entity.domain == "sensor" and entity.unique_id in retired:
             registry.async_remove(entity.entity_id)
 
 

@@ -109,48 +109,6 @@
       "delegated_ipv6_prefix": {
         "default": "mdi:ip-network-outline"
       },
-      "wifi_24ghz_status": {
-        "default": "mdi:wifi-off",
-        "state": {
-          "enabled": "mdi:wifi",
-          "disabled": "mdi:wifi-off"
-        }
-      },
-      "wifi_5ghz_status": {
-        "default": "mdi:wifi-off",
-        "state": {
-          "enabled": "mdi:wifi",
-          "disabled": "mdi:wifi-off"
-        }
-      },
-      "lan_1_connection_status": {
-        "default": "mdi:ethernet-off",
-        "state": {
-          "connected": "mdi:ethernet",
-          "disconnected": "mdi:ethernet-off"
-        }
-      },
-      "lan_2_connection_status": {
-        "default": "mdi:ethernet-off",
-        "state": {
-          "connected": "mdi:ethernet",
-          "disconnected": "mdi:ethernet-off"
-        }
-      },
-      "lan_3_connection_status": {
-        "default": "mdi:ethernet-off",
-        "state": {
-          "connected": "mdi:ethernet",
-          "disconnected": "mdi:ethernet-off"
-        }
-      },
-      "lan_4_connection_status": {
-        "default": "mdi:ethernet-off",
-        "state": {
-          "connected": "mdi:ethernet",
-          "disconnected": "mdi:ethernet-off"
-        }
-      },
       "lan_1_speed": {
         "default": "mdi:speedometer"
       },
@@ -394,6 +352,48 @@
         "state": {
           "on": "mdi:database-export-outline",
           "off": "mdi:database-off-outline"
+        }
+      },
+      "lan_1_connection": {
+        "default": "mdi:ethernet-off",
+        "state": {
+          "on": "mdi:ethernet",
+          "off": "mdi:ethernet-off"
+        }
+      },
+      "lan_2_connection": {
+        "default": "mdi:ethernet-off",
+        "state": {
+          "on": "mdi:ethernet",
+          "off": "mdi:ethernet-off"
+        }
+      },
+      "lan_3_connection": {
+        "default": "mdi:ethernet-off",
+        "state": {
+          "on": "mdi:ethernet",
+          "off": "mdi:ethernet-off"
+        }
+      },
+      "lan_4_connection": {
+        "default": "mdi:ethernet-off",
+        "state": {
+          "on": "mdi:ethernet",
+          "off": "mdi:ethernet-off"
+        }
+      },
+      "wifi_24ghz": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "on": "mdi:wifi",
+          "off": "mdi:wifi-off"
+        }
+      },
+      "wifi_5ghz": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "on": "mdi:wifi",
+          "off": "mdi:wifi-off"
         }
       }
     },

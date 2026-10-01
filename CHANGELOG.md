@@ -6,15 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Binary sensors "LAN 1-4 Connection" (connectivity) and "Wi-Fi 2.4 GHz" / "Wi-Fi 5 GHz" (without an access code; with one, the Wi-Fi switches of the same name show and set it).
+
 ### Changed
 
 - Firewall Advanced uses `mdi:wall-fire` (on) and `mdi:wall` (off).
-- LAN port status is now an enum sensor with the states `connected`/`disconnected`, and Wi-Fi status `enabled`/`disabled` (shared with the Xfinity Gateway integration, translated in the UI). Automations comparing against the old values ("up", "Enabled") need updating.
 
 ### Removed
 
-- The Connection Status sensor; use the Connectivity binary sensor.
-- The Wi-Fi 2.4/5 GHz Status sensors when an access code is configured; the Wi-Fi switches show the same state.
+- The Connection Status sensor; the Connectivity binary sensor shows the same.
+- The LAN 1-4 Connection Status and Wi-Fi 2.4/5 GHz Status sensors, replaced by binary sensors (see Added).
 
 ### Fixed
 

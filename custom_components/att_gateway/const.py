@@ -247,20 +247,6 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
     GatewayField(
         "delegated_ipv6_prefix", "Delegated IPv6 Prefix", f"{_LAN_IPV6_TABLE} tr:nth-child(5) td"
     ),
-    GatewayField(
-        "wifi_24ghz_status", "Wi-Fi 2.4 GHz Status", f"{_WIFI_TABLE} td.col2:nth-of-type(2)"
-    ),
-    GatewayField(
-        "wifi_5ghz_status", "Wi-Fi 5 GHz Status", f"{_WIFI_TABLE} td.col2:nth-of-type(3)"
-    ),
-    *(
-        GatewayField(
-            f"lan_{port}_connection_status",
-            f"LAN {port} Connection Status",
-            f"{_LAN_PORTS_TABLE} tr:nth-child(2) td:nth-child({port + 1})",
-        )
-        for port in range(1, 5)
-    ),
     *(
         GatewayField(
             f"lan_{port}_speed",
@@ -279,6 +265,20 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
         for port in range(1, 5)
         for key, name, row in LAN_PORT_COUNTERS
     ),
+)
+
+# Two-state rows on lanstatistics.ha, exposed as binary sensors.
+LAN_PORT_LINK_FIELDS: tuple[GatewayField, ...] = tuple(
+    GatewayField(
+        f"lan_{port}_connection",
+        f"LAN {port} Connection",
+        f"{_LAN_PORTS_TABLE} tr:nth-child(2) td:nth-child({port + 1})",
+    )
+    for port in range(1, 5)
+)
+WIFI_RADIO_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("wifi_24ghz", "Wi-Fi 2.4 GHz", f"{_WIFI_TABLE} td.col2:nth-of-type(2)"),
+    GatewayField("wifi_5ghz", "Wi-Fi 5 GHz", f"{_WIFI_TABLE} td.col2:nth-of-type(3)"),
 )
 
 # "On"/"Off" status rows, exposed as binary sensors.
@@ -427,21 +427,8 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
 
 ICON_ACTIVE = "mdi:check-network-outline"
 ICON_INACTIVE = "mdi:close-network-outline"
-WIFI_STATUS_FIELD_KEYS = frozenset({"wifi_24ghz_status", "wifi_5ghz_status"})
-LAN_PORT_STATUS_FIELD_KEYS = frozenset(f"lan_{port}_connection_status" for port in range(1, 5))
-ICON_ETHERNET_ON = "mdi:ethernet"
-ICON_ETHERNET_OFF = "mdi:ethernet-off"
 ICON_WIFI_ON = "mdi:wifi"
 ICON_WIFI_OFF = "mdi:wifi-off"
-# Status sensors as enums, with keys shared with the Xfinity Gateway integration:
-# key -> {gateway value (lowercased): state}.
-LINK_STATES = {"up": "connected", "down": "disconnected"}
-WIFI_STATES = {"enabled": "enabled", "disabled": "disabled"}
-ENUM_STATUS_FIELDS: dict[str, dict[str, str]] = {
-    **{key: LINK_STATES for key in LAN_PORT_STATUS_FIELD_KEYS},
-    **{key: WIFI_STATES for key in WIFI_STATUS_FIELD_KEYS},
-}
-
 LAST_REBOOT_ICON = "mdi:clock-time-four-outline"
 
 STATIC_ICONS: dict[str, str] = {

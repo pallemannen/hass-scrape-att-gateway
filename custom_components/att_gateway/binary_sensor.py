@@ -24,8 +24,10 @@ from .const import (
     ICON_ACTIVE,
     ICON_INACTIVE,
     IPV6_SETTING_FIELDS,
+    LAN_PORT_LINK_FIELDS,
     ON_OFF_ICONS,
     STATUS_FIELDS,
+    WIFI_RADIO_FIELDS,
 )
 from .util import entity_object_id, extract_text
 
@@ -51,6 +53,16 @@ async def async_setup_entry(
         OnOffFieldSensor(hass, entry.runtime_data["lan"], DHCP_SERVER_FIELD, device_info)
     )
     entities.append(FiberAlarmSensor(hass, entry.runtime_data["fiber"], device_info))
+    entities.extend(
+        StateFieldSensor(hass, entry.runtime_data["lan"], field, device_info, "up", BinarySensorDeviceClass.CONNECTIVITY)
+        for field in LAN_PORT_LINK_FIELDS
+    )
+    if entry.runtime_data["client"] is None:
+        # With the access code, the Wi-Fi switches show (and set) this instead.
+        entities.extend(
+            StateFieldSensor(hass, entry.runtime_data["lan"], field, device_info, "enabled")
+            for field in WIFI_RADIO_FIELDS
+        )
     if (coordinator_ipv6 := entry.runtime_data.get("ipv6")) is not None:
         entities.extend(
             OnOffFieldSensor(hass, coordinator_ipv6, field, device_info)
@@ -183,3 +195,32 @@ class FiberAlarmSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
         """Return the non-zero counters."""
         counts = self._counts()
         return {k: v for k, v in counts.items() if v} if counts else None
+
+
+class StateFieldSensor(OnOffFieldSensor):
+    """A two-state row: on when the gateway shows `on_value` (icons from icons.json)."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        coordinator: ScrapeCoordinator,
+        field: GatewayField,
+        device_info: DeviceInfo,
+        on_value: str,
+        device_class: BinarySensorDeviceClass | None = None,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(hass, coordinator, field, device_info)
+        self._on_value = on_value
+        self._attr_device_class = device_class
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return true if the gateway shows the on value."""
+        value = extract_text(self.coordinator, self._field.select)
+        return value.lower() == self._on_value if value else None
+
+    @property
+    def icon(self) -> None:
+        """Leave icons to icons.json."""
+        return None
