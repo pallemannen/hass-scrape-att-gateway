@@ -29,11 +29,7 @@
         "default": "mdi:chip"
       },
       "connection_status": {
-        "default": "mdi:check-network-outline",
-        "state": {
-          "Up": "mdi:check-network-outline",
-          "Down": "mdi:close-network-outline"
-        }
+        "default": "mdi:check-network-outline"
       },
       "external_ip_address": {
         "default": "mdi:ip-network-outline"
@@ -117,18 +113,10 @@
         "default": "mdi:ip-network-outline"
       },
       "wifi_24ghz_status": {
-        "default": "mdi:wifi-off",
-        "state": {
-          "Enabled": "mdi:wifi",
-          "Disabled": "mdi:wifi-off"
-        }
+        "default": "mdi:wifi-off"
       },
       "wifi_5ghz_status": {
-        "default": "mdi:wifi-off",
-        "state": {
-          "Enabled": "mdi:wifi",
-          "Disabled": "mdi:wifi-off"
-        }
+        "default": "mdi:wifi-off"
       },
       "lan_1_connection_status": {
         "default": "mdi:ethernet",
