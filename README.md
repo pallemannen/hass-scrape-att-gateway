@@ -26,12 +26,12 @@ No YAML editing or manually edited config files needed - everything is set up th
 ## What you get
 
 **Sensors**
-- Connection status, current time, system uptime, last reboot
+- Current time, system uptime, last reboot
 - External IP and IPv6 addresses, default gateways, primary/secondary DNS (IPv4 and IPv6), broadband source, external link speed, PON link status
 - Receive/transmit packet, byte, and unicast counters
 - LAN IP address and netmask, DHCP leases, bridge mode address
 - LAN IPv6 address and subnet, and the **delegated IPv6 prefix** (empty when the gateway isn't delegating one to your router)
-- Wi-Fi 2.4/5 GHz status, per-port LAN connection status, speed and traffic counters, number of active/inactive clients
+- Wi-Fi 2.4/5 GHz status (without an access code; with one, the Wi-Fi switches show it), per-port LAN connection status, speed and traffic counters, number of active/inactive clients
 - Fiber status and link state, MTU
 - IP address (the address Home Assistant reaches the gateway on)
 - Manufacturer, model, hardware/software version, serial number, first use date

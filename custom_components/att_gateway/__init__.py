@@ -102,10 +102,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = runtime_data
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _async_remove_retired_entities(hass, entry)
     _async_migrate_entity_ids(hass, entry)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     return True
+
+
+def _async_remove_retired_entities(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Remove registry entries for entities this integration no longer creates."""
+    retired = {"att_gateway_connection_status"}
+    if entry.runtime_data["client"]:
+        retired |= {"att_gateway_wifi_24ghz_status", "att_gateway_wifi_5ghz_status"}
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if entity.unique_id in retired:
+            registry.async_remove(entity.entity_id)
 
 
 def _async_migrate_entity_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:

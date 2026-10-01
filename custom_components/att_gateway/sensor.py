@@ -30,6 +30,7 @@ from .const import (
     BYTE_FIELD_KEYS,
     CONF_HOST,
     COUNTER_FIELD_KEYS,
+    CONNECTION_STATUS_FIELD_KEY,
     CURRENT_TIME_FIELD_KEY,
     CURRENT_TIME_FORMAT,
     DEFAULT_SCAN_INTERVAL,
@@ -54,6 +55,7 @@ from .const import (
     STATUS_FIELDS,
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
+    WIFI_STATUS_FIELD_KEYS,
     WIFI_SSID_FIELDS,
 )
 from .util import entity_object_id, extract_text as _extract_text
@@ -62,6 +64,7 @@ _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = "sensor.{}"
 # Only IpAddressSensor polls; everything else is coordinator-driven.
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+_SKIPPED_FIELD_KEYS = frozenset({CONNECTION_STATUS_FIELD_KEY})
 
 
 def _parse_current_time(raw: str | None) -> datetime | None:
@@ -117,6 +120,12 @@ async def async_setup_entry(
         if coordinator is None:
             continue
         for field in fields:
+            if field.key in _SKIPPED_FIELD_KEYS or (
+                field.key in WIFI_STATUS_FIELD_KEYS and entry.runtime_data["client"]
+            ):
+                # Connection Status: same as the Connectivity binary sensor.
+                # Wi-Fi status: same as the Wi-Fi switches, when those exist.
+                continue
             if field.key in COUNTER_FIELD_KEYS:
                 cls = CounterFieldSensor
             elif field.key in GAUGE_FIELD_KEYS:

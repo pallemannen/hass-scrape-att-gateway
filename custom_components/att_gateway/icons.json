@@ -28,13 +28,6 @@
       "hardware_version": {
         "default": "mdi:chip"
       },
-      "connection_status": {
-        "default": "mdi:close-network-outline",
-        "state": {
-          "connected": "mdi:check-network-outline",
-          "disconnected": "mdi:close-network-outline"
-        }
-      },
       "external_ip_address": {
         "default": "mdi:ip-network-outline"
       },

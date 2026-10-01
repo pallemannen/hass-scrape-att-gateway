@@ -35,12 +35,6 @@
   },
   "entity": {
     "sensor": {
-      "connection_status": {
-        "state": {
-          "connected": "Connected",
-          "disconnected": "Disconnected"
-        }
-      },
       "lan_1_connection_status": {
         "state": {
           "connected": "Connected",

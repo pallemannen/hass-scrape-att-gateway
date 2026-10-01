@@ -9,7 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Firewall Advanced uses `mdi:wall-fire` (on) and `mdi:wall` (off).
-- Connection Status and LAN port status are now enum sensors with the states `connected`/`disconnected`, and Wi-Fi status `enabled`/`disabled` (shared with the Xfinity Gateway integration, translated in the UI). Automations comparing against the old values ("Up", "Enabled") need updating.
+- LAN port status is now an enum sensor with the states `connected`/`disconnected`, and Wi-Fi status `enabled`/`disabled` (shared with the Xfinity Gateway integration, translated in the UI). Automations comparing against the old values ("up", "Enabled") need updating.
+
+### Removed
+
+- The Connection Status sensor; use the Connectivity binary sensor.
+- The Wi-Fi 2.4/5 GHz Status sensors when an access code is configured; the Wi-Fi switches show the same state.
 
 ### Fixed
 
