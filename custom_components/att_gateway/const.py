@@ -271,7 +271,7 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
 LAN_PORT_LINK_FIELDS: tuple[GatewayField, ...] = tuple(
     GatewayField(
         f"lan_{port}_connection",
-        f"LAN {port} Connection",
+        f"LAN {port}",
         f"{_LAN_PORTS_TABLE} tr:nth-child(2) td:nth-child({port + 1})",
     )
     for port in range(1, 5)
@@ -350,6 +350,13 @@ WIFI_SWITCHES = (
     ("guest_wifi", "Guest Wi-Fi", "gssidenable"),
 )
 WIFI_SAVE_BUTTON = ("Save", "Save...")
+# Wi-Fi Mode select: option -> (2.4 GHz, 5 GHz) radio settings.
+WIFI_MODES: dict[str, tuple[str, str]] = {
+    "off": ("off", "off"),
+    "wifi_24ghz": ("on", "off"),
+    "wifi_5ghz": ("off", "on"),
+    "all": ("on", "on"),
+}
 
 # Lists on locked pages, counted as "Number of ..." sensors: (key, name, path, table).
 LIST_COUNTS = (

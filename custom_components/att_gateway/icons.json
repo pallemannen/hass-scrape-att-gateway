@@ -395,6 +395,23 @@
           "on": "mdi:wifi",
           "off": "mdi:wifi-off"
         }
+      },
+      "wan": {
+        "default": "mdi:wan"
+      },
+      "lan": {
+        "default": "mdi:lan-disconnect",
+        "state": {
+          "on": "mdi:lan-connect",
+          "off": "mdi:lan-disconnect"
+        }
+      },
+      "wifi": {
+        "default": "mdi:wifi-off",
+        "state": {
+          "on": "mdi:wifi",
+          "off": "mdi:wifi-off"
+        }
       }
     },
     "switch": {
@@ -426,6 +443,17 @@
       },
       "restart": {
         "default": "mdi:restart"
+      }
+    },
+    "select": {
+      "wifi_mode": {
+        "default": "mdi:wifi-cog",
+        "state": {
+          "off": "mdi:wifi-off",
+          "wifi_24ghz": "mdi:wifi",
+          "wifi_5ghz": "mdi:wifi",
+          "all": "mdi:wifi"
+        }
       }
     }
   }

@@ -32,5 +32,17 @@
       "already_configured": "AT&T Gateway is already configured.",
       "reconfigure_successful": "AT&T Gateway settings updated."
     }
+  },
+  "entity": {
+    "select": {
+      "wifi_mode": {
+        "state": {
+          "off": "Off",
+          "wifi_24ghz": "2.4 GHz",
+          "wifi_5ghz": "5 GHz",
+          "all": "All"
+        }
+      }
+    }
   }
 }

@@ -32,5 +32,17 @@
       "already_configured": "AT&T Gateway är redan installerad.",
       "reconfigure_successful": "AT&T Gateway-inställningarna har uppdaterats."
     }
+  },
+  "entity": {
+    "select": {
+      "wifi_mode": {
+        "state": {
+          "off": "Av",
+          "wifi_24ghz": "2,4 GHz",
+          "wifi_5ghz": "5 GHz",
+          "all": "Alla"
+        }
+      }
+    }
   }
 }

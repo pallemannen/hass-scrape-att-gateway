@@ -8,15 +8,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Binary sensors "LAN 1-4 Connection" (connectivity) and "Wi-Fi 2.4 GHz" / "Wi-Fi 5 GHz" (without an access code; with one, the Wi-Fi switches of the same name show and set it).
+- Binary sensors WAN, LAN (any port connected), LAN 1-4, and Wi-Fi (any radio on).
+- Binary sensors Wi-Fi 2.4 GHz / 5 GHz without an access code; with one, these are the switches of the same name.
+- With the access code: a Wi-Fi Mode select (Off, 2.4 GHz, 5 GHz, All).
 
 ### Changed
 
+- Connectivity now means WAN up and (any LAN port connected or any Wi-Fi radio on); WAN alone is the new WAN sensor.
 - Firewall Advanced uses `mdi:wall-fire` (on) and `mdi:wall` (off).
 
 ### Removed
 
-- The Connection Status sensor; the Connectivity binary sensor shows the same.
+- The Connection Status sensor; the WAN binary sensor shows the same.
 - The LAN 1-4 Connection Status and Wi-Fi 2.4/5 GHz Status sensors, replaced by binary sensors (see Added).
 
 ### Fixed

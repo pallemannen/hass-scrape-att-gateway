@@ -37,14 +37,15 @@ No YAML editing or manually edited config files needed - everything is set up th
 - Manufacturer, model, hardware/software version, serial number, first use date
 
 **Binary sensors**
-- Connectivity (on when the gateway reports its connection as "Up")
-- LAN 1-4 Connection, and Wi-Fi 2.4/5 GHz (without an access code; with one, these are switches)
+- Connectivity: WAN up and (any LAN port connected or any Wi-Fi radio on)
+- WAN, LAN (any port), LAN 1-4, Wi-Fi (any radio)
+- Wi-Fi 2.4/5 GHz (without an access code; with one, these are switches)
 - DHCP server, packet filter, bridge mode, NAT default server, Firewall Advanced
 - Fiber alarm (on when the fiber module reports an alarm or warning)
 
 **With the Device Access Code**
 - NAT sessions available/in use
-- **Wi-Fi switches** for 2.4 GHz, 5 GHz and the guest network, plus their SSIDs
+- **Wi-Fi switches** for 2.4 GHz, 5 GHz and the guest network, a **Wi-Fi Mode** select (Off, 2.4 GHz, 5 GHz, All), and the SSIDs
 - Number of MAC filter entries, packet filter rules, hosted applications and custom services
 - IPv6, DHCPv6 and prefix delegation settings, router advertisement MTU
 - Passthrough settings: allocation mode, passthrough mode, fixed MAC address, DHCP lease
