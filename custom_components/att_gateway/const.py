@@ -433,6 +433,16 @@ ICON_ETHERNET_ON = "mdi:ethernet"
 ICON_ETHERNET_OFF = "mdi:ethernet-off"
 ICON_WIFI_ON = "mdi:wifi"
 ICON_WIFI_OFF = "mdi:wifi-off"
+# Status sensors as enums, with keys shared with the Xfinity Gateway integration:
+# key -> {gateway value (lowercased): state}.
+LINK_STATES = {"up": "connected", "down": "disconnected"}
+WIFI_STATES = {"enabled": "enabled", "disabled": "disabled"}
+ENUM_STATUS_FIELDS: dict[str, dict[str, str]] = {
+    CONNECTION_STATUS_FIELD_KEY: LINK_STATES,
+    **{key: LINK_STATES for key in LAN_PORT_STATUS_FIELD_KEYS},
+    **{key: WIFI_STATES for key in WIFI_STATUS_FIELD_KEYS},
+}
+
 LAST_REBOOT_ICON = "mdi:clock-time-four-outline"
 
 STATIC_ICONS: dict[str, str] = {

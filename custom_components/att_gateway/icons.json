@@ -29,7 +29,11 @@
         "default": "mdi:chip"
       },
       "connection_status": {
-        "default": "mdi:check-network-outline"
+        "default": "mdi:close-network-outline",
+        "state": {
+          "connected": "mdi:check-network-outline",
+          "disconnected": "mdi:close-network-outline"
+        }
       },
       "external_ip_address": {
         "default": "mdi:ip-network-outline"
@@ -113,37 +117,45 @@
         "default": "mdi:ip-network-outline"
       },
       "wifi_24ghz_status": {
-        "default": "mdi:wifi-off"
+        "default": "mdi:wifi-off",
+        "state": {
+          "enabled": "mdi:wifi",
+          "disabled": "mdi:wifi-off"
+        }
       },
       "wifi_5ghz_status": {
-        "default": "mdi:wifi-off"
+        "default": "mdi:wifi-off",
+        "state": {
+          "enabled": "mdi:wifi",
+          "disabled": "mdi:wifi-off"
+        }
       },
       "lan_1_connection_status": {
-        "default": "mdi:ethernet",
+        "default": "mdi:ethernet-off",
         "state": {
-          "up": "mdi:ethernet",
-          "down": "mdi:ethernet-off"
+          "connected": "mdi:ethernet",
+          "disconnected": "mdi:ethernet-off"
         }
       },
       "lan_2_connection_status": {
-        "default": "mdi:ethernet",
+        "default": "mdi:ethernet-off",
         "state": {
-          "up": "mdi:ethernet",
-          "down": "mdi:ethernet-off"
+          "connected": "mdi:ethernet",
+          "disconnected": "mdi:ethernet-off"
         }
       },
       "lan_3_connection_status": {
-        "default": "mdi:ethernet",
+        "default": "mdi:ethernet-off",
         "state": {
-          "up": "mdi:ethernet",
-          "down": "mdi:ethernet-off"
+          "connected": "mdi:ethernet",
+          "disconnected": "mdi:ethernet-off"
         }
       },
       "lan_4_connection_status": {
-        "default": "mdi:ethernet",
+        "default": "mdi:ethernet-off",
         "state": {
-          "up": "mdi:ethernet",
-          "down": "mdi:ethernet-off"
+          "connected": "mdi:ethernet",
+          "disconnected": "mdi:ethernet-off"
         }
       },
       "lan_1_speed": {

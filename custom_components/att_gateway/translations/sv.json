@@ -32,5 +32,51 @@
       "already_configured": "AT&T Gateway är redan installerad.",
       "reconfigure_successful": "AT&T Gateway-inställningarna har uppdaterats."
     }
+  },
+  "entity": {
+    "sensor": {
+      "connection_status": {
+        "state": {
+          "connected": "Ansluten",
+          "disconnected": "Frånkopplad"
+        }
+      },
+      "lan_1_connection_status": {
+        "state": {
+          "connected": "Ansluten",
+          "disconnected": "Frånkopplad"
+        }
+      },
+      "lan_2_connection_status": {
+        "state": {
+          "connected": "Ansluten",
+          "disconnected": "Frånkopplad"
+        }
+      },
+      "lan_3_connection_status": {
+        "state": {
+          "connected": "Ansluten",
+          "disconnected": "Frånkopplad"
+        }
+      },
+      "lan_4_connection_status": {
+        "state": {
+          "connected": "Ansluten",
+          "disconnected": "Frånkopplad"
+        }
+      },
+      "wifi_24ghz_status": {
+        "state": {
+          "enabled": "Aktiverad",
+          "disabled": "Inaktiverad"
+        }
+      },
+      "wifi_5ghz_status": {
+        "state": {
+          "enabled": "Aktiverad",
+          "disabled": "Inaktiverad"
+        }
+      }
+    }
   }
 }
