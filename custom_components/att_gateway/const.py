@@ -247,20 +247,6 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
     GatewayField(
         "delegated_ipv6_prefix", "Delegated IPv6 Prefix", f"{_LAN_IPV6_TABLE} tr:nth-child(5) td"
     ),
-    GatewayField(
-        "wifi_24ghz_status", "Wi-Fi 2.4 GHz Status", f"{_WIFI_TABLE} td.col2:nth-of-type(2)"
-    ),
-    GatewayField(
-        "wifi_5ghz_status", "Wi-Fi 5 GHz Status", f"{_WIFI_TABLE} td.col2:nth-of-type(3)"
-    ),
-    *(
-        GatewayField(
-            f"lan_{port}_connection_status",
-            f"LAN {port} Connection Status",
-            f"{_LAN_PORTS_TABLE} tr:nth-child(2) td:nth-child({port + 1})",
-        )
-        for port in range(1, 5)
-    ),
     *(
         GatewayField(
             f"lan_{port}_speed",
@@ -279,6 +265,20 @@ LAN_FIELDS: tuple[GatewayField, ...] = (
         for port in range(1, 5)
         for key, name, row in LAN_PORT_COUNTERS
     ),
+)
+
+# Two-state rows on lanstatistics.ha, exposed as binary sensors.
+LAN_PORT_LINK_FIELDS: tuple[GatewayField, ...] = tuple(
+    GatewayField(
+        f"lan_{port}_connection",
+        f"LAN {port}",
+        f"{_LAN_PORTS_TABLE} tr:nth-child(2) td:nth-child({port + 1})",
+    )
+    for port in range(1, 5)
+)
+WIFI_RADIO_FIELDS: tuple[GatewayField, ...] = (
+    GatewayField("wifi_24ghz", "Wi-Fi 2.4 GHz", f"{_WIFI_TABLE} td.col2:nth-of-type(2)"),
+    GatewayField("wifi_5ghz", "Wi-Fi 5 GHz", f"{_WIFI_TABLE} td.col2:nth-of-type(3)"),
 )
 
 # "On"/"Off" status rows, exposed as binary sensors.
@@ -350,6 +350,13 @@ WIFI_SWITCHES = (
     ("guest_wifi", "Guest Wi-Fi", "gssidenable"),
 )
 WIFI_SAVE_BUTTON = ("Save", "Save...")
+# Wi-Fi Mode select: option -> (2.4 GHz, 5 GHz) radio settings.
+WIFI_MODES: dict[str, tuple[str, str]] = {
+    "off": ("off", "off"),
+    "wifi_24ghz": ("on", "off"),
+    "wifi_5ghz": ("off", "on"),
+    "all": ("on", "on"),
+}
 
 # Lists on locked pages, counted as "Number of ..." sensors: (key, name, path, table).
 LIST_COUNTS = (
@@ -419,7 +426,7 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
     "ip_passthrough": ("mdi:bridge", "mdi:router-network-wireless"),
     "packet_filter": ("mdi:filter", "mdi:filter-off"),
     "nat_default_server": ("mdi:server-network", "mdi:server-network-off"),
-    "firewall_advanced": ("mdi:shield-check", "mdi:shield-off"),
+    "firewall_advanced": ("mdi:wall-fire", "mdi:wall"),
     "ipv6": ("mdi:ip-network-outline", "mdi:ip-network-outline"),
     "dhcpv6": ("mdi:database-export-outline", "mdi:database-off-outline"),
     "dhcpv6_prefix_delegation": ("mdi:database-export-outline", "mdi:database-off-outline"),
@@ -427,10 +434,6 @@ ON_OFF_ICONS: dict[str, tuple[str, str]] = {
 
 ICON_ACTIVE = "mdi:check-network-outline"
 ICON_INACTIVE = "mdi:close-network-outline"
-WIFI_STATUS_FIELD_KEYS = frozenset({"wifi_24ghz_status", "wifi_5ghz_status"})
-LAN_PORT_STATUS_FIELD_KEYS = frozenset(f"lan_{port}_connection_status" for port in range(1, 5))
-ICON_ETHERNET_ON = "mdi:ethernet"
-ICON_ETHERNET_OFF = "mdi:ethernet-off"
 ICON_WIFI_ON = "mdi:wifi"
 ICON_WIFI_OFF = "mdi:wifi-off"
 LAST_REBOOT_ICON = "mdi:clock-time-four-outline"

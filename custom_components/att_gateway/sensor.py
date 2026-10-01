@@ -29,23 +29,16 @@ from homeassistant.util import dt as dt_util
 from .const import (
     BYTE_FIELD_KEYS,
     CONF_HOST,
-    CONNECTION_STATUS_FIELD_KEY,
     COUNTER_FIELD_KEYS,
+    CONNECTION_STATUS_FIELD_KEY,
     CURRENT_TIME_FIELD_KEY,
     CURRENT_TIME_FORMAT,
     DEFAULT_SCAN_INTERVAL,
     FIBER_FIELDS,
     GAUGE_FIELD_KEYS,
     GatewayField,
-    ICON_ACTIVE,
-    ICON_ETHERNET_OFF,
-    ICON_ETHERNET_ON,
-    ICON_INACTIVE,
-    ICON_WIFI_OFF,
-    ICON_WIFI_ON,
     LAN_FIELDS,
     LAN_INTERFACES_TABLE,
-    LAN_PORT_STATUS_FIELD_KEYS,
     LAN_PORT_SPEED_FIELD_KEYS,
     LAST_REBOOT_ICON,
     LINK_SPEED_FIELD_KEYS,
@@ -62,7 +55,6 @@ from .const import (
     SYSINFO_FIELDS,
     SYSTEM_UPTIME_FIELD_KEY,
     WIFI_SSID_FIELDS,
-    WIFI_STATUS_FIELD_KEYS,
 )
 from .util import entity_object_id, extract_text as _extract_text
 
@@ -70,6 +62,7 @@ _LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = "sensor.{}"
 # Only IpAddressSensor polls; everything else is coordinator-driven.
 SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+_SKIPPED_FIELD_KEYS = frozenset({CONNECTION_STATUS_FIELD_KEY})
 
 
 def _parse_current_time(raw: str | None) -> datetime | None:
@@ -125,6 +118,9 @@ async def async_setup_entry(
         if coordinator is None:
             continue
         for field in fields:
+            if field.key in _SKIPPED_FIELD_KEYS:
+                # Same as the Connectivity binary sensor.
+                continue
             if field.key in COUNTER_FIELD_KEYS:
                 cls = CounterFieldSensor
             elif field.key in GAUGE_FIELD_KEYS:
@@ -171,6 +167,7 @@ async def async_setup_entry(
 def _init_entity(entity, hass: HomeAssistant, key: str, device_info: DeviceInfo) -> None:
     """Shared unique_id/entity_id/device/icon setup for the derived sensors."""
     entity._attr_unique_id = f"att_gateway_{key}"
+    entity._attr_translation_key = key
     entity._attr_device_info = device_info
     entity._attr_icon = STATIC_ICONS.get(key)
     entity.entity_id = async_generate_entity_id(
@@ -209,6 +206,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         self._attr_name = field.name
         self._attr_entity_registry_enabled_default = field.enabled
         self._attr_unique_id = f"att_gateway_{field.key}"
+        self._attr_translation_key = field.key
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
@@ -223,15 +221,6 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
     @property
     def icon(self) -> str | None:
         """Return a static icon, or a state-dependent one for Connection Status."""
-        if self._field.key == CONNECTION_STATUS_FIELD_KEY:
-            value = self.native_value
-            return ICON_ACTIVE if value and value.lower() == "up" else ICON_INACTIVE
-        if self._field.key in WIFI_STATUS_FIELD_KEYS:
-            value = self.native_value
-            return ICON_WIFI_ON if value and value.lower() == "enabled" else ICON_WIFI_OFF
-        if self._field.key in LAN_PORT_STATUS_FIELD_KEYS:
-            value = self.native_value
-            return ICON_ETHERNET_ON if value and value.lower() == "up" else ICON_ETHERNET_OFF
         return self._static_icon
 
 
@@ -331,6 +320,7 @@ class LastRebootSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._attr_icon = LAST_REBOOT_ICON
         self._attr_unique_id = "att_gateway_last_reboot"
+        self._attr_translation_key = "last_reboot"
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass

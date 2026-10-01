@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Binary sensors WAN, LAN (any port connected), LAN 1-4, and Wi-Fi (any radio on).
+- Binary sensors Wi-Fi 2.4 GHz / 5 GHz without an access code; with one, these are the switches of the same name.
+- With the access code: a Wi-Fi Mode select (Off, 2.4 GHz, 5 GHz, All).
+
+### Changed
+
+- Connectivity now means WAN up and (any LAN port connected or any Wi-Fi radio on); WAN alone is the new WAN sensor.
+- Firewall Advanced uses `mdi:wall-fire` (on) and `mdi:wall` (off).
+
+### Removed
+
+- The Connection Status sensor; the WAN binary sensor shows the same.
+- The LAN 1-4 Connection Status and Wi-Fi 2.4/5 GHz Status sensors, replaced by binary sensors (see Added).
+
+### Fixed
+
+- Disabled entities had no icon in the entity lists; icons now also come from `icons.json`.
+
 ## [1.2.0] - 2026-09-30
 
 ### Added

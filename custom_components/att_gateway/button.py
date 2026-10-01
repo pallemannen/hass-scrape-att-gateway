@@ -51,6 +51,7 @@ class GatewayButton(ButtonEntity):
         """Initialize the button."""
         self._client = client
         self._attr_unique_id = f"att_gateway_{key}"
+        self._attr_translation_key = key
         self._attr_device_info = device_info
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
