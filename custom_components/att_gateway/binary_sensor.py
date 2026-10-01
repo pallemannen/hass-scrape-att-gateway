@@ -1,6 +1,7 @@
 """Binary sensor for the AT&T Gateway integration."""
 from __future__ import annotations
 
+import logging
 import re
 
 from homeassistant.components.binary_sensor import (
@@ -31,6 +32,7 @@ from .const import (
 )
 from .util import entity_object_id, extract_text
 
+_LOGGER = logging.getLogger(__name__)
 ENTITY_ID_FORMAT = "binary_sensor.{}"
 
 
@@ -54,13 +56,18 @@ async def async_setup_entry(
     )
     entities.append(FiberAlarmSensor(hass, entry.runtime_data["fiber"], device_info))
     entities.extend(
-        StateFieldSensor(hass, entry.runtime_data["lan"], field, device_info, "up", BinarySensorDeviceClass.CONNECTIVITY)
+        StateFieldSensor(
+            hass, entry.runtime_data["lan"], field, device_info, ("up", "down"),
+            BinarySensorDeviceClass.CONNECTIVITY,
+        )
         for field in LAN_PORT_LINK_FIELDS
     )
     if entry.runtime_data["client"] is None:
         # With the access code, the Wi-Fi switches show (and set) this instead.
         entities.extend(
-            StateFieldSensor(hass, entry.runtime_data["lan"], field, device_info, "enabled")
+            StateFieldSensor(
+                hass, entry.runtime_data["lan"], field, device_info, ("enabled", "disabled")
+            )
             for field in WIFI_RADIO_FIELDS
         )
     if (coordinator_ipv6 := entry.runtime_data.get("ipv6")) is not None:
@@ -69,6 +76,21 @@ async def async_setup_entry(
             for field in IPV6_SETTING_FIELDS
         )
     async_add_entities(entities)
+
+
+def _two_state(
+    value: str | None, name: str, on: str, off: str, prefix: bool = False
+) -> bool | None:
+    """Map a gateway value to on/off; unexpected values become unknown (None)."""
+    if not value:
+        return None
+    value = value.lower()
+    if value == on or (prefix and value.startswith(on + " ")):
+        return True
+    if value == off or (prefix and value.startswith(off + " ")):
+        return False
+    _LOGGER.debug("Unexpected %s value %r", name, value)
+    return None
 
 
 class GatewayConnectivitySensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
@@ -137,8 +159,11 @@ class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
     @property
     def is_on(self) -> bool | None:
         """Return true if the gateway shows the feature as on."""
-        value = extract_text(self.coordinator, self._field.select, self._field.attr)
-        return value.lower().startswith("on") if value else None
+        # "On", "On (public IP address)", "Off"; anything else is unknown.
+        return _two_state(
+            extract_text(self.coordinator, self._field.select, self._field.attr),
+            self._field.name, "on", "off", prefix=True,
+        )
 
     @property
     def icon(self) -> str | None:
@@ -206,19 +231,20 @@ class StateFieldSensor(OnOffFieldSensor):
         coordinator: ScrapeCoordinator,
         field: GatewayField,
         device_info: DeviceInfo,
-        on_value: str,
+        values: tuple[str, str],
         device_class: BinarySensorDeviceClass | None = None,
     ) -> None:
-        """Initialize the sensor."""
+        """Initialize the sensor with the gateway's (on, off) values."""
         super().__init__(hass, coordinator, field, device_info)
-        self._on_value = on_value
+        self._values = values
         self._attr_device_class = device_class
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if the gateway shows the on value."""
-        value = extract_text(self.coordinator, self._field.select)
-        return value.lower() == self._on_value if value else None
+        """Return true/false for the known values, None (unknown) for anything else."""
+        return _two_state(
+            extract_text(self.coordinator, self._field.select), self._field.name, *self._values
+        )
 
     @property
     def icon(self) -> None:
