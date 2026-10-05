@@ -158,5 +158,9 @@ class GatewayClient:
             await self._login()
 
     async def async_close(self) -> None:
-        """Close the session."""
-        await self._session.close()
+        """Release the session.
+
+        It shares Home Assistant's connector pool, so it must be detached,
+        never closed (HA blocks close() on its sessions and logs a warning).
+        """
+        self._session.detach()
