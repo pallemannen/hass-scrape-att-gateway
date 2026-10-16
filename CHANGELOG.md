@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3.1] - 2026-10-06
+
+### Changed
+
+- Byte counters (Receive/Transmit Bytes) now suggest GiB as display unit instead of showing raw bytes. Applies to newly created entities; existing entities can be switched under the entity's settings.
+
 ## [1.3.0] - 2026-10-01
 
 ### Added
