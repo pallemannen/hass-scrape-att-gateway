@@ -4,7 +4,18 @@ All notable changes to this project are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [1.3.2] - 2026-10-19
+## [1.3.3] - 2026-10-19
+
+### Fixed
+
+- Adding the integration with the Device Access Code set no longer hangs Home Assistant on busy networks. The NAT page lists every NAT session, and the NAT sensors' selectors took about a minute per update with ~1,600 sessions, on the event loop; the page is now reduced to its summary table after parsing. Thanks to @johnbr (#9).
+- Unloading the integration releases its HTTP session properly instead of triggering Home Assistant's "closes the Home Assistant aiohttp session" warning (#9).
+
+### Changed
+
+- Entity state is now computed in the executor, once per update, instead of in the state properties on the event loop. A slow page can delay its own sensors but can no longer freeze Home Assistant.
+
+ - 2026-10-19
 
 ### Fixed
 

@@ -12,6 +12,7 @@ from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 
+from .computed import ComputedStateMixin
 from .api import GatewayAuthError, GatewayClient, GatewayConnectionError
 from .const import ICON_WIFI_OFF, ICON_WIFI_ON, WIFI_PATH, WIFI_SAVE_BUTTON, WIFI_SWITCHES
 from .util import entity_object_id, extract_text
@@ -35,7 +36,7 @@ async def async_setup_entry(
     )
 
 
-class WifiSwitch(CoordinatorEntity[DataUpdateCoordinator], SwitchEntity):
+class WifiSwitch(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SwitchEntity):
     """Turns a Wi-Fi radio or the guest network on or off."""
 
     _attr_has_entity_name = True
@@ -62,8 +63,7 @@ class WifiSwitch(CoordinatorEntity[DataUpdateCoordinator], SwitchEntity):
             ENTITY_ID_FORMAT, entity_object_id(name), hass=hass
         )
 
-    @property
-    def is_on(self) -> bool | None:
+    def _compute_is_on(self) -> bool | None:
         """Return true if the setting is on."""
         value = extract_text(self.coordinator, f'select[name="{self._field}"] option[selected]', "value")
         return value == "on" if value else None

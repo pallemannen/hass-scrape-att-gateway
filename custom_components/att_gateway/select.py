@@ -10,6 +10,7 @@ from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 
+from .computed import ComputedStateMixin
 from .api import GatewayAuthError, GatewayClient, GatewayConnectionError
 from .const import WIFI_MODES, WIFI_PATH, WIFI_SAVE_BUTTON, WIFI_SWITCHES
 from .util import entity_object_id, extract_text
@@ -32,7 +33,7 @@ async def async_setup_entry(
     )
 
 
-class WifiModeSelect(CoordinatorEntity[DataUpdateCoordinator], SelectEntity):
+class WifiModeSelect(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SelectEntity):
     """Which Wi-Fi radios are on: off, 2.4 GHz, 5 GHz or all."""
 
     _attr_has_entity_name = True
@@ -56,8 +57,7 @@ class WifiModeSelect(CoordinatorEntity[DataUpdateCoordinator], SelectEntity):
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
 
-    @property
-    def current_option(self) -> str | None:
+    def _compute_current_option(self) -> str | None:
         """Return the mode matching the radios' current settings."""
         radios = tuple(
             extract_text(self.coordinator, f'select[name="{field}"] option[selected]', "value")
