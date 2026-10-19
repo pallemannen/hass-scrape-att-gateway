@@ -18,6 +18,7 @@ from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .computed import ComputedStateMixin
 from .const import (
     CONNECTION_STATUS_FIELD_KEY,
     DHCP_SERVER_FIELD,
@@ -136,7 +137,7 @@ def _any_on(states: list[bool | None]) -> bool | None:
     return None
 
 
-class DerivedSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
+class DerivedSensor(ComputedStateMixin, CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
     """A binary sensor computed from one page's data (icons from icons.json)."""
 
     _attr_has_entity_name = True
@@ -163,8 +164,7 @@ class DerivedSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
             ENTITY_ID_FORMAT, entity_object_id(name), hass=hass
         )
 
-    @property
-    def is_on(self) -> bool | None:
+    def _compute_is_on(self) -> bool | None:
         """Return the computed state."""
         return self._compute(self.coordinator)
 
@@ -198,8 +198,7 @@ class ConnectivitySensor(DerivedSensor):
         """Available when both pages are."""
         return super().available and self._coordinator_lan.last_update_success
 
-    @property
-    def is_on(self) -> bool | None:
+    def _compute_is_on(self) -> bool | None:
         """Return true if the gateway is providing connectivity."""
         wan = _wan_state(self.coordinator)
         if not wan:
@@ -213,7 +212,7 @@ class ConnectivitySensor(DerivedSensor):
         return None
 
 
-class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
+class OnOffFieldSensor(ComputedStateMixin, CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
     """A status row the gateway shows as "On"/"Off" (firewall features, DHCP server)."""
 
     _attr_has_entity_name = True
@@ -237,8 +236,7 @@ class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
             ENTITY_ID_FORMAT, entity_object_id(self._attr_name), hass=hass
         )
 
-    @property
-    def is_on(self) -> bool | None:
+    def _compute_is_on(self) -> bool | None:
         """Return true if the gateway shows the feature as on."""
         # "On", "On (public IP address)", "Off"; anything else is unknown.
         return _two_state(
@@ -253,7 +251,7 @@ class OnOffFieldSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
         return on_icon if self.is_on else off_icon
 
 
-class FiberAlarmSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
+class FiberAlarmSensor(ComputedStateMixin, CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity):
     """On when any of the fiber module's alarm/warning counters is non-zero."""
 
     _attr_has_entity_name = True
@@ -290,14 +288,12 @@ class FiberAlarmSensor(CoordinatorEntity[ScrapeCoordinator], BinarySensorEntity)
                         counts[f"{key}_{cells[0].lower()}_{level}"] = int(match.group())
         return counts or None
 
-    @property
-    def is_on(self) -> bool | None:
+    def _compute_is_on(self) -> bool | None:
         """Return true if any alarm or warning counter is non-zero."""
         counts = self._counts()
         return any(counts.values()) if counts is not None else None
 
-    @property
-    def extra_state_attributes(self) -> dict[str, int] | None:
+    def _compute_extra_state_attributes(self) -> dict[str, int] | None:
         """Return the non-zero counters."""
         counts = self._counts()
         return {k: v for k, v in counts.items() if v} if counts else None
@@ -320,8 +316,7 @@ class StateFieldSensor(OnOffFieldSensor):
         self._values = values
         self._attr_device_class = device_class
 
-    @property
-    def is_on(self) -> bool | None:
+    def _compute_is_on(self) -> bool | None:
         """Return true/false for the known values, None (unknown) for anything else."""
         return _two_state(
             extract_text(self.coordinator, self._field.select), self._field.name, *self._values

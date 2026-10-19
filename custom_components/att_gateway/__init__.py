@@ -80,7 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "lan": await _async_build_coordinator(hass, entry, host, LAN_PATH),
         "firewall": await _async_build_coordinator(hass, entry, host, FIREWALL_PATH),
         "fiber": await _async_build_coordinator(hass, entry, host, FIBER_PATH),
-        "device_info": build_device_info(entry, coordinator_sysinfo),
+        "device_info": await hass.async_add_executor_job(build_device_info, entry, coordinator_sysinfo),
         "client": None,
     }
 

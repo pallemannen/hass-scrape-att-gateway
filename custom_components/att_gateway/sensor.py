@@ -26,6 +26,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
+from .computed import ComputedStateMixin
 from .const import (
     BYTE_FIELD_KEYS,
     CONF_HOST,
@@ -188,7 +189,7 @@ def _parse_int(raw: str | None) -> int | None:
         return None
 
 
-class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
+class GatewayFieldSensor(ComputedStateMixin, CoordinatorEntity[ScrapeCoordinator], SensorEntity):
     """A sensor reading a single scraped field as plain stripped text."""
 
     _attr_has_entity_name = True
@@ -213,8 +214,7 @@ class GatewayFieldSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         )
         self._static_icon = STATIC_ICONS.get(field.key)
 
-    @property
-    def native_value(self) -> str | None:
+    def _compute_native_value(self) -> str | None:
         """Return the sensor's current value."""
         return _extract_text(self.coordinator, self._field.select, self._field.attr)
 
@@ -243,8 +243,7 @@ class CounterFieldSensor(GatewayFieldSensor):
             self._attr_native_unit_of_measurement = UnitOfInformation.BYTES
             self._attr_suggested_unit_of_measurement = UnitOfInformation.GIBIBYTES
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the counter's current value, parsed as an int."""
         raw = _extract_text(self.coordinator, self._field.select)
         if raw is None:
@@ -263,8 +262,7 @@ class TimestampFieldSensor(GatewayFieldSensor):
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
-    @property
-    def native_value(self) -> datetime | None:
+    def _compute_native_value(self) -> datetime | None:
         """Return the parsed timestamp."""
         raw = _extract_text(self.coordinator, self._field.select)
         return dt_util.parse_datetime(raw) if raw else None
@@ -275,8 +273,7 @@ class CurrentTimeSensor(GatewayFieldSensor):
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
-    @property
-    def native_value(self) -> datetime | None:
+    def _compute_native_value(self) -> datetime | None:
         """Return the gateway's current time, parsed and localized."""
         raw = _extract_text(self.coordinator, self._field.select)
         return _parse_current_time(raw)
@@ -289,8 +286,7 @@ class UptimeSensor(GatewayFieldSensor):
     _attr_native_unit_of_measurement = UnitOfTime.SECONDS
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the uptime in seconds."""
         raw = _extract_text(self.coordinator, self._field.select)
         if raw is None:
@@ -301,7 +297,7 @@ class UptimeSensor(GatewayFieldSensor):
             return None
 
 
-class LastRebootSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
+class LastRebootSensor(ComputedStateMixin, CoordinatorEntity[ScrapeCoordinator], SensorEntity):
     """Derived timestamp sensor: the gateway's own current time minus its own uptime.
 
     Deliberately anchored to the gateway's own clock rather than
@@ -333,8 +329,7 @@ class LastRebootSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
             f.select for f in SYSINFO_FIELDS if f.key == SYSTEM_UPTIME_FIELD_KEY
         )
 
-    @property
-    def native_value(self) -> datetime | None:
+    def _compute_native_value(self) -> datetime | None:
         """Return the computed last-reboot timestamp."""
         gateway_now = _parse_current_time(
             _extract_text(self.coordinator, self._current_time_select)
@@ -354,8 +349,7 @@ class GaugeFieldSensor(GatewayFieldSensor):
 
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the value, parsed as an int."""
         return _parse_int(_extract_text(self.coordinator, self._field.select, self._field.attr))
 
@@ -370,14 +364,13 @@ class LinkSpeedSensor(GaugeFieldSensor):
 class LanPortSpeedSensor(LinkSpeedSensor):
     """A LAN port speed; the gateway reports these in bit/s (0 when the port is down)."""
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the port speed in Mbps."""
-        value = super().native_value
+        value = super()._compute_native_value()
         return value // 1_000_000 if value is not None else None
 
 
-class ClientCountSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
+class ClientCountSensor(ComputedStateMixin, CoordinatorEntity[ScrapeCoordinator], SensorEntity):
     """Active or inactive client count, summed over the LAN Interfaces table."""
 
     _attr_has_entity_name = True
@@ -398,8 +391,7 @@ class ClientCountSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         self._select = f"{LAN_INTERFACES_TABLE} tr td:nth-child({column})"
         _init_entity(self, hass, key, device_info)
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the summed count."""
         if self.coordinator.data is None:
             return None
@@ -408,7 +400,7 @@ class ClientCountSensor(CoordinatorEntity[ScrapeCoordinator], SensorEntity):
         return sum(values) if values else None
 
 
-class SpeedTestSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+class SpeedTestSensor(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
     """Throughput of the gateway's most recent speed test in one direction."""
 
     _attr_has_entity_name = True
@@ -432,8 +424,7 @@ class SpeedTestSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
         self._direction = direction
         _init_entity(self, hass, key, device_info)
 
-    @property
-    def native_value(self) -> float | None:
+    def _compute_native_value(self) -> float | None:
         """Return the newest result's throughput for this direction."""
         for cells in _speed_rows(self.coordinator):
             if len(cells) > 2 and cells[1] == self._direction:
@@ -444,7 +435,7 @@ class SpeedTestSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
         return None
 
 
-class LastSpeedTestSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+class LastSpeedTestSensor(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
     """Completion time of the gateway's most recent speed test (gateway local time)."""
 
     _attr_has_entity_name = True
@@ -458,8 +449,7 @@ class LastSpeedTestSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity
         super().__init__(coordinator)
         _init_entity(self, hass, "last_speed_test", device_info)
 
-    @property
-    def native_value(self) -> datetime | None:
+    def _compute_native_value(self) -> datetime | None:
         """Return the newest result's completion time."""
         for cells in _speed_rows(self.coordinator):
             try:
@@ -505,7 +495,7 @@ class IpAddressSensor(SensorEntity):
             self._attr_native_value = None
 
 
-class PassthroughLeaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+class PassthroughLeaseSensor(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
     """The passthrough DHCP lease time (days/hours/minutes/seconds form fields)."""
 
     _attr_has_entity_name = True
@@ -520,8 +510,7 @@ class PassthroughLeaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEnt
         super().__init__(coordinator)
         _init_entity(self, hass, "passthrough_dhcp_lease", device_info)
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the lease time in seconds."""
         total = 0
         for name, seconds in PASSTHROUGH_LEASE_INPUTS.items():
@@ -532,7 +521,7 @@ class PassthroughLeaseSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEnt
         return total
 
 
-class ListCountSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+class ListCountSensor(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
     """Number of entries in a list table; the entries' cell texts as an attribute."""
 
     _attr_has_entity_name = True
@@ -563,20 +552,18 @@ class ListCountSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
             if tr.select("td")
         ]
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the number of entries."""
         entries = self._entries()
         return len(entries) if entries is not None else None
 
-    @property
-    def extra_state_attributes(self) -> dict[str, list[str]] | None:
+    def _compute_extra_state_attributes(self) -> dict[str, list[str]] | None:
         """Return the entries."""
         entries = self._entries()
         return {"entries": entries} if entries else None
 
 
-class PacketFilterRulesSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
+class PacketFilterRulesSensor(ComputedStateMixin, CoordinatorEntity[DataUpdateCoordinator], SensorEntity):
     """Number of packet filter rules that have at least one match condition.
 
     Each rule is a numbered row followed by rows for its match conditions;
@@ -608,14 +595,12 @@ class PacketFilterRulesSensor(CoordinatorEntity[DataUpdateCoordinator], SensorEn
                 rules[-1].append(" ".join(c for c in cells if c))
         return [" / ".join(r) for r in rules if r]
 
-    @property
-    def native_value(self) -> int | None:
+    def _compute_native_value(self) -> int | None:
         """Return the number of non-empty rules."""
         rules = self._rules()
         return len(rules) if rules is not None else None
 
-    @property
-    def extra_state_attributes(self) -> dict[str, list[str]] | None:
+    def _compute_extra_state_attributes(self) -> dict[str, list[str]] | None:
         """Return the rules' match conditions."""
         rules = self._rules()
         return {"rules": rules} if rules else None
