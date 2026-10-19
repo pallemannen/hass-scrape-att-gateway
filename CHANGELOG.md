@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3.2] - 2026-10-19
+
+### Fixed
+
+- REST and Scrape are now declared as dependencies, so Home Assistant sets them up and installs beautifulsoup4 before this integration loads. Previously they were only ordering hints, and the integration failed to load where Scrape wasn't already set up.
+
+### Changed
+
+- The HACS validation no longer ignores the brands check; the in-tree `brand/` icons satisfy it.
+
 ## [1.3.1] - 2026-10-06
 
 ### Changed
