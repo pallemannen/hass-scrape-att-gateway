@@ -39,6 +39,8 @@ from .const import (
     IPV6_PATH,
     LAN_PATH,
     NAT_PATH,
+    NAT_SUMMARY_ROWS,
+    NAT_SUMMARY_TABLE,
     PASSTHROUGH_PATH,
     SPEED_PATH,
     STATUS_PATH,
@@ -94,7 +96,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ("packet_filter", PACKET_FILTER_PATH),
             *((key, path) for key, _, path, _ in LIST_COUNTS),
         ):
-            coordinator = LockedPageCoordinator(hass, entry, client, path)
+            if path == NAT_PATH:
+                coordinator = LockedPageCoordinator(
+                    hass, entry, client, path, NAT_SUMMARY_TABLE, NAT_SUMMARY_ROWS
+                )
+            else:
+                coordinator = LockedPageCoordinator(hass, entry, client, path)
             # A rejected code shouldn't take down the open-page entities.
             await coordinator.async_refresh()
             runtime_data[key] = coordinator

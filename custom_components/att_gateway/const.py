@@ -370,8 +370,14 @@ LIST_COUNTS = (
 # Packet filter rules: numbered rows, followed by their match rows.
 PACKET_FILTER_TABLE = 'table[summary*="packetfilter"]'
 
-# nattable.ha (needs the Device Access Code).
-_NAT_TABLE = 'table[summary*="summary of session information"]'
+# nattable.ha (needs the Device Access Code). The page also lists every NAT
+# session, so it grows with the session count (thousands of rows on a busy
+# network). Only the summary table is kept after parsing: soupsieve matches
+# "<table> tr:nth-child(n) td" right to left over every <td> in the document,
+# which is quadratic in the row count - minutes per sensor, on the event loop.
+NAT_SUMMARY_TABLE = 'table[summary*="summary of session information"]'
+NAT_SUMMARY_ROWS = 2
+_NAT_TABLE = NAT_SUMMARY_TABLE
 NAT_FIELDS: tuple[GatewayField, ...] = (
     GatewayField(
         "nat_sessions_available", "NAT Sessions Available", f"{_NAT_TABLE} tr:nth-child(1) td"
